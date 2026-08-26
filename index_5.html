@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+<title>Ventas Shell MDZ</title>
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Ventas Shell MDZ" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#0F2027" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Roboto+Mono:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F2027; --bg-elev:#1A3542; --bg-elev2:#22475A;
+    --paper:#F6F1E4; --amber:#F5B400; --red:#E85D3D; --green:#4FB477;
+    --text:#F6F1E4; --text-dim:#9FB6BE; --border:#2E4E5C;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
+    font-family:'Inter',sans-serif; height:100%; overscroll-behavior:none; }
+  body{ display:flex; justify-content:center; }
+  #app, #authScreen{ width:100%; max-width:480px; min-height:100vh; min-height:100dvh;
+    display:flex; flex-direction:column; position:relative; }
+  .eyebrow{ font-family:'Oswald',sans-serif; letter-spacing:.03em; font-size:11px;
+    color:var(--text-dim); text-transform:uppercase; margin-bottom:4px; font-weight:600; }
+  .display{ font-family:'Oswald',sans-serif; letter-spacing:.03em; }
+  .mono{ font-family:'Roboto Mono',monospace; font-variant-numeric: tabular-nums; }
+  .tap{ transition: transform .08s ease; cursor:pointer; }
+  .tap:active{ transform: scale(.96); }
+  .flash{ animation: flashAnim .35s ease; }
+  @keyframes flashAnim{ 0%{ filter:brightness(1.6);} 100%{ filter:brightness(1);} }
+
+  header{ padding:16px 16px 8px; border-bottom:1px solid var(--border); }
+  header .title{ font-size:24px; font-weight:700; text-transform:uppercase; }
+
+  #error{ display:none; margin:10px 16px 0; background:rgba(232,93,61,.15);
+    border:1px solid var(--red); border-radius:12px; padding:8px 12px; font-size:13px; }
+
+  main{ flex:1; overflow-y:auto; padding:14px 16px 90px; }
+
+  input[type=date], input[type=text], input[type=number], input[type=email], input[type=password]{
+    background:#0F232B; border:1px solid var(--border); color:var(--text);
+    border-radius:12px; padding:10px 12px; font-size:14px; width:100%;
+    font-family:'Inter',sans-serif;
+  }
+  input[type=date]::-webkit-calendar-picker-indicator{ filter:invert(1); opacity:.7; }
+
+  .hero{ background:#08161C; border:1px solid var(--border); border-radius:16px;
+    padding:16px 18px; margin-bottom:16px; }
+  .hero .amount{ font-size:38px; font-weight:700; color:var(--green); line-height:1.1; }
+  .hero .sub{ font-size:13px; color:var(--text-dim); margin-top:2px; }
+
+  .grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .promo-btn{ position:relative; background:var(--bg-elev); border:1px solid var(--border);
+    border-radius:16px; padding:16px 12px; min-height:92px; display:flex; flex-direction:column;
+    justify-content:space-between; color:var(--text); }
+  .promo-btn .name{ font-family:'Oswald',sans-serif; font-size:15px; font-weight:600;
+    text-transform:uppercase; line-height:1.2; padding-right:20px; }
+  .promo-btn .price{ font-size:17px; color:var(--amber); font-weight:700; }
+  .badge{ position:absolute; top:8px; right:8px; background:var(--amber); color:#1A1200;
+    border-radius:999px; min-width:22px; height:22px; font-size:12px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; padding:0 5px; }
+  .minus-btn{ position:absolute; bottom:8px; right:8px; background:rgba(232,93,61,.18);
+    border:1px solid var(--red); color:var(--red); border-radius:999px; width:22px; height:22px;
+    display:flex; align-items:center; justify-content:center; font-weight:900; font-size:14px; line-height:1; }
+
+  .empty{ text-align:center; padding:40px 12px; color:var(--text-dim); }
+  .empty svg{ opacity:.6; margin-bottom:10px; }
+  .btn-amber{ background:var(--amber); color:#1A1200; border:none; border-radius:12px;
+    padding:10px 18px; font-weight:700; font-size:14px; }
+
+  .row-card{ background:var(--bg-elev); border:1px solid var(--border); border-radius:12px;
+    padding:10px 12px; display:flex; align-items:center; justify-content:space-between; }
+  .row-card + .row-card{ margin-top:8px; }
+
+  .undo-btn{ position:fixed; bottom:78px; right:calc(50% - 240px + 16px); background:var(--red);
+    color:var(--paper); border:none; border-radius:999px; padding:10px 16px; display:none;
+    align-items:center; gap:6px; font-size:13px; font-weight:600; box-shadow:0 4px 14px rgba(0,0,0,.35); }
+  @media (max-width:480px){ .undo-btn{ right:16px; } }
+
+  nav{ position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:100%; max-width:480px;
+    background:var(--bg-elev); border-top:1px solid var(--border); display:flex;
+    padding:6px 4px calc(6px + env(safe-area-inset-bottom)); }
+  nav button{ flex:1; background:transparent; border:none; color:var(--text-dim); display:flex;
+    flex-direction:column; align-items:center; gap:2px; padding:6px 0; font-family:inherit; }
+  nav button span{ font-size:10px; font-weight:500; }
+  nav button.active{ color:var(--amber); }
+  nav button.active span{ font-weight:700; }
+
+  .field-card{ background:var(--bg-elev); border:1px solid var(--border); border-radius:14px;
+    padding:12px; margin-bottom:20px; display:flex; flex-direction:column; gap:8px; }
+
+  .tab{ display:none; }
+  .tab.active{ display:block; }
+
+  .vendor-row{ display:flex; gap:8px; margin-bottom:14px; }
+  .vendor-btn{ flex:1; background:var(--bg-elev); border:1px solid var(--border); color:var(--text-dim);
+    border-radius:12px; padding:10px 6px; font-size:13px; font-weight:600; text-align:center; }
+  .vendor-btn.active{ background:var(--amber); color:#1A1200; border-color:var(--amber); }
+
+  .chip-row{ display:flex; gap:8px; margin-bottom:14px; }
+  .chip{ flex:1; background:var(--bg-elev); border:1px solid var(--border); border-radius:10px;
+    padding:8px 10px; }
+  .chip .n{ font-size:11px; color:var(--text-dim); }
+  .chip .v{ font-size:15px; font-weight:700; color:var(--amber); }
+
+  #authScreen{ align-items:center; justify-content:center; padding:24px; }
+  #authScreen .box{ width:100%; max-width:340px; }
+  #authScreen .title{ font-size:28px; font-weight:700; text-transform:uppercase; text-align:center; margin-bottom:4px; }
+  #authScreen .eyebrow{ text-align:center; margin-bottom:24px; }
+  #authScreen input{ margin-bottom:10px; }
+  #authError{ display:none; color:var(--red); font-size:13px; margin-top:8px; text-align:center; }
+  #authLoading{ display:none; text-align:center; color:var(--text-dim); font-size:13px; }
+</style>
+</head>
+<body>
+
+<div id="authScreen">
+  <div class="box">
+    <div class="title">Ventas Shell MDZ</div>
+    <div class="eyebrow">Iniciá sesión para ver el registro compartido</div>
+    <input type="email" id="authEmail" placeholder="Email" autocomplete="username" />
+    <input type="password" id="authPassword" placeholder="Contraseña" autocomplete="current-password" />
+    <button class="btn-amber tap" style="width:100%; padding:11px 0;" onclick="doSignIn()">Ingresar</button>
+    <div id="authError"></div>
+    <div id="authLoading">Conectando…</div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+  <header>
+    <div class="eyebrow">Registro de ventas · compartido</div>
+    <div class="title">Ventas Shell MDZ</div>
+  </header>
+
+  <div id="error"></div>
+
+  <main>
+    <!-- VENDER -->
+    <section id="tab-vender" class="tab active">
+      <div class="vendor-row">
+        <div class="vendor-btn tap active" data-vendor="Juan Cruz Solís" onclick="setVendedor('Juan Cruz Solís')">Juan Cruz Solís</div>
+        <div class="vendor-btn tap" data-vendor="Maira Medley" onclick="setVendedor('Maira Medley')">Maira Medley</div>
+      </div>
+      <input type="date" id="sellDate" />
+      <div class="hero" style="margin-top:10px;">
+        <div class="eyebrow" id="sellDateLabel"></div>
+        <div class="amount mono" id="sellTotal">$0</div>
+        <div class="sub mono" id="sellCount">0 ventas</div>
+      </div>
+      <div id="ventaEmpty" class="empty" style="display:none;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 9.4 7.5 4.21"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+        <div style="margin-bottom:12px;">Todavía no cargaste productos ni promos.</div>
+        <button class="btn-amber tap" onclick="goToProductos()">Cargar productos</button>
+      </div>
+      <div id="ventaGrid" class="grid"></div>
+    </section>
+
+    <!-- HISTORIAL -->
+    <section id="tab-historial" class="tab">
+      <div class="hero">
+        <div class="eyebrow">Total acumulado</div>
+        <div class="amount mono" id="grandTotal">$0</div>
+        <div class="sub mono" id="grandCount">0 ventas · 0 días</div>
+      </div>
+      <input type="date" id="histDate" style="margin-bottom:12px;" />
+      <div class="row-card" style="background:var(--bg-elev2); margin-bottom:14px;">
+        <div>
+          <div class="eyebrow" id="histDateLabel" style="margin-bottom:0;"></div>
+          <div class="amount mono" id="histTotal" style="font-size:26px; color:var(--amber);">$0</div>
+        </div>
+        <div class="sub mono" id="histCount" style="margin-top:0;">0 ventas</div>
+      </div>
+      <div class="chip-row" id="vendorChips"></div>
+      <div id="histEmpty" class="empty" style="display:none; padding:30px 12px; font-size:14px;">
+        No hay ventas cargadas este día.
+      </div>
+      <div id="histList"></div>
+    </section>
+
+    <!-- PRODUCTOS -->
+    <section id="tab-productos" class="tab">
+      <div class="eyebrow">Nuevo producto o promo</div>
+      <div class="field-card">
+        <input type="text" id="newName" placeholder="Ej: Oreo + Pepitos" />
+        <input type="number" id="newPrice" placeholder="Precio, ej: 3000" inputmode="decimal" />
+        <button class="btn-amber tap" style="padding:10px 0;" onclick="addPromo()">Agregar producto</button>
+      </div>
+      <div class="eyebrow" id="prodCount">Tus productos (0)</div>
+      <div id="prodEmpty" class="empty" style="display:none; padding:20px 12px; font-size:14px;">
+        Todavía no cargaste ninguno.
+      </div>
+      <div id="prodList" style="margin-bottom:24px;"></div>
+
+      <div class="eyebrow">Reporte</div>
+      <div class="field-card">
+        <button class="tap" style="background:var(--green); border:none; color:#06231A; border-radius:10px; padding:10px 0; font-weight:700; font-size:13px;" onclick="exportExcel()">
+          Descargar Excel (día, vendedor, productos y totales)
+        </button>
+      </div>
+
+      <div class="eyebrow">Copia de seguridad</div>
+      <div class="field-card">
+        <button class="tap" style="background:var(--bg-elev2); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:10px 0; font-weight:600; font-size:13px;" onclick="exportData()">
+          Exportar datos (guardar archivo)
+        </button>
+        <label class="tap" style="text-align:center; background:transparent; border:1px solid var(--border); color:var(--text-dim); border-radius:10px; padding:10px 0; font-weight:600; font-size:13px; display:block;">
+          Importar datos (restaurar para todos)
+          <input type="file" id="importFile" accept="application/json" style="display:none;" onchange="importData(event)" />
+        </label>
+        <div style="font-size:12px; color:var(--text-dim); line-height:1.4;">
+          Esto ya se guarda en la nube (Firebase) y se sincroniza solo entre todos. Exportar es solo un respaldo extra por las dudas.
+        </div>
+      </div>
+
+      <button class="tap" style="width:100%; background:transparent; border:1px solid var(--red); color:var(--red); border-radius:10px; padding:10px 0; font-size:13px; font-weight:600; margin-bottom:10px;" onclick="resetAll()">Borrar todos los datos</button>
+      <button class="tap" style="width:100%; background:transparent; border:1px solid var(--border); color:var(--text-dim); border-radius:10px; padding:10px 0; font-size:13px; font-weight:600;" onclick="doSignOut()">Cerrar sesión</button>
+    </section>
+  </main>
+
+  <button class="undo-btn tap" id="undoBtn" onclick="undoLast()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"/></svg>
+    <span id="undoLabel">Deshacer</span>
+  </button>
+
+  <nav>
+    <button class="tap active" data-tab="vender" onclick="setTab('vender')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+      <span>Vender</span>
+    </button>
+    <button class="tap" data-tab="historial" onclick="setTab('historial')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
+      <span>Historial</span>
+    </button>
+    <button class="tap" data-tab="productos" onclick="setTab('productos')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+      <span>Productos</span>
+    </button>
+  </nav>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, doc, setDoc, onSnapshot, enableIndexedDbPersistence
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDSYFOmmeCAU7upIx1RE26nt_js28OI0dc",
+    authDomain: "ventas-shell-mdz.firebaseapp.com",
+    projectId: "ventas-shell-mdz",
+    storageBucket: "ventas-shell-mdz.firebasestorage.app",
+    messagingSenderId: "120745170395",
+    appId: "1:120745170395:web:abd47c3b5bfe908d5e83fe"
+  };
+
+  const fbApp = initializeApp(firebaseConfig);
+  const auth = getAuth(fbApp);
+  const db = getFirestore(fbApp);
+  try { enableIndexedDbPersistence(db); } catch (e) { /* ok si falla (varias pestañas abiertas) */ }
+  setPersistence(auth, browserLocalPersistence).catch(()=>{});
+
+  const DOC_REF = doc(db, "shared", "data");
+  let unsubscribeSnapshot = null;
+
+  // ---------- Utilidades ----------
+  function todayStr(){
+    const d = new Date();
+    const off = d.getTimezoneOffset();
+    return new Date(d.getTime() - off*60000).toISOString().slice(0,10);
+  }
+  function money(n){ return "$" + Math.round(n).toLocaleString("es-AR"); }
+  function dateLabel(dateStr, short){
+    const [y,m,d] = dateStr.split("-").map(Number);
+    const date = new Date(y, m-1, d);
+    if(short && dateStr === todayStr()) return "Hoy";
+    return date.toLocaleDateString("es-AR", {weekday:"short", day:"2-digit", month:"short"}).replace(".", "");
+  }
+  function uid(){ return Date.now().toString() + Math.random().toString(36).slice(2,6); }
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  // ---------- Estado ----------
+  let promos = [];
+  let salesData = {};
+  let vendedorActivo = localStorage.getItem("turno_vendedor") || "Juan Cruz Solís";
+  let sellDate = todayStr();
+  let selectedDate = todayStr();
+  let lastAdded = null;
+
+  function showError(msg){
+    const el = document.getElementById("error");
+    el.textContent = msg; el.style.display = "block";
+    clearTimeout(showError._t);
+    showError._t = setTimeout(()=>{ el.style.display="none"; }, 3500);
+  }
+
+  // ---------- Firestore: guardar / escuchar ----------
+  async function persist(){
+    try {
+      await setDoc(DOC_REF, { promos, sales: salesData, updatedAt: Date.now() });
+    } catch(e){
+      showError("No se pudo guardar en la nube. Revisá tu conexión.");
+    }
+  }
+
+  function subscribeData(){
+    if(unsubscribeSnapshot) unsubscribeSnapshot();
+    unsubscribeSnapshot = onSnapshot(DOC_REF, (snap) => {
+      const data = snap.exists() ? snap.data() : { promos: [], sales: {} };
+      promos = data.promos || [];
+      salesData = data.sales || {};
+      renderAll();
+    }, (err) => {
+      showError("No se pudo sincronizar: " + err.message);
+    });
+  }
+
+  function renderAll(){
+    renderVender();
+    renderHistorial();
+    renderProductos();
+    updateUndoBtn();
+  }
+
+  // ---------- Vendedor ----------
+  window.setVendedor = function(name){
+    vendedorActivo = name;
+    localStorage.setItem("turno_vendedor", name);
+    document.querySelectorAll(".vendor-btn").forEach(b=>{
+      b.classList.toggle("active", b.dataset.vendor === name);
+    });
+  };
+
+  // ---------- Navegación ----------
+  window.setTab = function(tab){
+    document.querySelectorAll(".tab").forEach(el=>el.classList.remove("active"));
+    document.getElementById("tab-"+tab).classList.add("active");
+    document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active", b.dataset.tab===tab));
+    updateUndoBtn();
+  };
+  window.goToProductos = function(){ window.setTab("productos"); };
+
+  // ---------- Ventas ----------
+  function qtyOnDate(date, promoId){
+    return (salesData[date]||[]).filter(e=>e.promoId===promoId).length;
+  }
+  function totalOnDate(date){
+    return (salesData[date]||[]).reduce((s,e)=>s+e.price,0);
+  }
+
+  function addSale(promo){
+    const entry = { id: uid(), promoId: promo.id, name: promo.name, price: promo.price,
+      vendedor: vendedorActivo,
+      time: new Date().toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit"}) };
+    if(!salesData[sellDate]) salesData[sellDate] = [];
+    salesData[sellDate].push(entry);
+    persist();
+    lastAdded = { date: sellDate, id: entry.id, name: promo.name };
+    renderVender(promo.id);
+    updateUndoBtn();
+  }
+
+  function removeSale(promo){
+    const list = salesData[sellDate] || [];
+    let idx = -1;
+    for(let i=list.length-1;i>=0;i--){ if(list[i].promoId===promo.id){ idx=i; break; } }
+    if(idx===-1) return;
+    const removedId = list[idx].id;
+    list.splice(idx,1);
+    if(list.length) salesData[sellDate] = list; else delete salesData[sellDate];
+    persist();
+    if(lastAdded && lastAdded.id === removedId) lastAdded = null;
+    renderVender();
+    updateUndoBtn();
+  }
+
+  window.undoLast = function(){
+    if(!lastAdded) return;
+    const { date, id } = lastAdded;
+    const list = (salesData[date]||[]).filter(e=>e.id!==id);
+    if(list.length) salesData[date] = list; else delete salesData[date];
+    persist();
+    lastAdded = null;
+    renderVender();
+    renderHistorial();
+    updateUndoBtn();
+  };
+  function updateUndoBtn(){
+    const btn = document.getElementById("undoBtn");
+    const visible = document.getElementById("tab-vender").classList.contains("active") && lastAdded;
+    btn.style.display = visible ? "flex" : "none";
+    if(lastAdded) document.getElementById("undoLabel").textContent = "Deshacer " + lastAdded.name;
+  }
+
+  // ---------- Render: Vender ----------
+  function renderVender(flashId){
+    document.getElementById("sellDate").value = sellDate;
+    document.getElementById("sellDateLabel").textContent = dateLabel(sellDate, true);
+    document.getElementById("sellTotal").textContent = money(totalOnDate(sellDate));
+    const c = (salesData[sellDate]||[]).length;
+    document.getElementById("sellCount").textContent = c + (c===1 ? " venta" : " ventas");
+
+    const grid = document.getElementById("ventaGrid");
+    const empty = document.getElementById("ventaEmpty");
+    if(promos.length === 0){
+      grid.style.display = "none"; empty.style.display = "block";
+      return;
+    }
+    grid.style.display = "grid"; empty.style.display = "none";
+    grid.innerHTML = "";
+    promos.forEach(p=>{
+      const q = qtyOnDate(sellDate, p.id);
+      const btn = document.createElement("div");
+      btn.className = "promo-btn tap" + (flashId===p.id ? " flash" : "");
+      btn.innerHTML = `
+        <span class="name">${escapeHtml(p.name)}</span>
+        <span class="price mono">${money(p.price)}</span>
+        ${q>0 ? `<span class="badge mono">${q}</span>` : ""}
+        ${q>0 ? `<span class="minus-btn tap" data-action="minus">−</span>` : ""}
+      `;
+      btn.addEventListener("click", (e)=>{
+        if(e.target.closest('[data-action="minus"]')){ removeSale(p); return; }
+        addSale(p);
+      });
+      grid.appendChild(btn);
+    });
+  }
+
+  // ---------- Render: Historial ----------
+  function renderHistorial(){
+    const allDates = Object.keys(salesData).sort((a,b)=>b.localeCompare(a));
+    const grandTotal = allDates.reduce((s,d)=>s+totalOnDate(d),0);
+    const grandCount = allDates.reduce((s,d)=>s+(salesData[d]||[]).length,0);
+    document.getElementById("grandTotal").textContent = money(grandTotal);
+    document.getElementById("grandCount").textContent = grandCount + " ventas · " + allDates.length + (allDates.length===1?" día":" días");
+
+    document.getElementById("histDate").value = selectedDate;
+    document.getElementById("histDateLabel").textContent = dateLabel(selectedDate, true);
+    const dayTotal = totalOnDate(selectedDate);
+    const daySales = salesData[selectedDate] || [];
+    document.getElementById("histTotal").textContent = money(dayTotal);
+    document.getElementById("histCount").textContent = daySales.length + (daySales.length===1?" venta":" ventas");
+
+    // Chips por vendedor
+    const vendedores = ["Juan Cruz Solís", "Maira Medley"];
+    const vendorChips = document.getElementById("vendorChips");
+    vendorChips.innerHTML = vendedores.map(v=>{
+      const total = daySales.filter(e=>e.vendedor===v).reduce((s,e)=>s+e.price,0);
+      return `<div class="chip"><div class="n">${escapeHtml(v)}</div><div class="v mono">${money(total)}</div></div>`;
+    }).join("");
+
+    const breakdown = {};
+    daySales.forEach(e=>{
+      if(!breakdown[e.promoId]) breakdown[e.promoId] = { name:e.name, qty:0, total:0 };
+      breakdown[e.promoId].qty++; breakdown[e.promoId].total += e.price;
+    });
+    const list = Object.values(breakdown).sort((a,b)=>b.total-a.total);
+
+    const listEl = document.getElementById("histList");
+    const emptyEl = document.getElementById("histEmpty");
+    if(list.length === 0){ listEl.innerHTML=""; emptyEl.style.display="block"; return; }
+    emptyEl.style.display = "none";
+    listEl.innerHTML = list.map(b => `
+      <div class="row-card">
+        <span style="font-size:14px; font-weight:600;">${escapeHtml(b.name)}</span>
+        <span class="mono" style="font-size:13px; color:var(--text-dim);">x${b.qty}</span>
+        <span class="mono" style="font-size:15px; color:var(--amber); font-weight:700;">${money(b.total)}</span>
+      </div>
+    `).join("");
+  }
+
+  // ---------- Render: Productos ----------
+  function renderProductos(){
+    document.getElementById("prodCount").textContent = "Tus productos (" + promos.length + ")";
+    const listEl = document.getElementById("prodList");
+    const emptyEl = document.getElementById("prodEmpty");
+    if(promos.length === 0){ listEl.innerHTML=""; emptyEl.style.display="block"; return; }
+    emptyEl.style.display = "none";
+    listEl.innerHTML = promos.map(p => `
+      <div class="row-card" data-id="${p.id}">
+        <div>
+          <div style="font-size:14px; font-weight:600;">${escapeHtml(p.name)}</div>
+          <div class="mono" style="font-size:13px; color:var(--amber);">${money(p.price)}</div>
+        </div>
+        <div style="display:flex; gap:4px;">
+          <button class="tap" data-action="edit" style="background:transparent;border:none;color:var(--text-dim);padding:6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+          </button>
+          <button class="tap" data-action="delete" style="background:transparent;border:none;color:var(--red);padding:6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+        </div>
+      </div>
+    `).join("");
+    listEl.querySelectorAll(".row-card").forEach(row=>{
+      const id = row.dataset.id;
+      row.querySelector('[data-action="edit"]').addEventListener("click", ()=>startEdit(id));
+      row.querySelector('[data-action="delete"]').addEventListener("click", ()=>deletePromo(id));
+    });
+  }
+
+  function startEdit(id){
+    const p = promos.find(x=>x.id===id);
+    if(!p) return;
+    const row = document.querySelector(`#prodList .row-card[data-id="${id}"]`);
+    row.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:6px; width:100%;">
+        <input type="text" id="editName-${id}" value="${escapeHtml(p.name)}" />
+        <input type="number" id="editPrice-${id}" value="${p.price}" inputmode="decimal" />
+        <div style="display:flex; gap:8px;">
+          <button class="tap" style="flex:1; background:var(--green); border:none; border-radius:8px; padding:8px 0; color:#06231A; font-weight:700;" data-action="save">Guardar</button>
+          <button class="tap" style="flex:1; background:transparent; border:1px solid var(--border); border-radius:8px; padding:8px 0; color:var(--text-dim);" data-action="cancel">Cancelar</button>
+        </div>
+      </div>
+    `;
+    row.querySelector('[data-action="save"]').addEventListener("click", ()=>saveEdit(id));
+    row.querySelector('[data-action="cancel"]').addEventListener("click", renderProductos);
+  }
+  function saveEdit(id){
+    const name = document.getElementById("editName-"+id).value.trim();
+    const price = parseFloat(document.getElementById("editPrice-"+id).value);
+    if(!name || !price || price<=0){ showError("Datos inválidos."); return; }
+    promos = promos.map(p => p.id===id ? {...p, name, price} : p);
+    persist();
+    renderProductos();
+  }
+  function deletePromo(id){
+    if(!confirm("¿Eliminar este producto? El historial de ventas no se toca.")) return;
+    promos = promos.filter(p=>p.id!==id);
+    persist();
+    renderProductos();
+  }
+  window.addPromo = function(){
+    const nameEl = document.getElementById("newName");
+    const priceEl = document.getElementById("newPrice");
+    const name = nameEl.value.trim();
+    const price = parseFloat(priceEl.value);
+    if(!name || !price || price<=0){ showError("Poné un nombre y un precio válido."); return; }
+    promos.push({ id: uid(), name, price });
+    persist();
+    nameEl.value=""; priceEl.value="";
+    renderProductos();
+  };
+  window.resetAll = function(){
+    if(!confirm("Esto borra todos los productos y todas las ventas PARA TODOS. ¿Seguro?")) return;
+    if(!confirm("Confirmá de nuevo: se borra TODO y no se puede deshacer.")) return;
+    promos = []; salesData = {};
+    persist();
+  };
+
+  // ---------- Reporte Excel ----------
+  window.exportExcel = function(){
+    if(typeof XLSX === "undefined"){
+      showError("No se pudo cargar el generador de Excel. Revisá tu conexión.");
+      return;
+    }
+    const allDates = Object.keys(salesData).sort((a,b)=>a.localeCompare(b));
+    if(allDates.length === 0){
+      showError("Todavía no hay ventas cargadas para exportar.");
+      return;
+    }
+    const vendedoresOrder = ["Juan Cruz Solís", "Maira Medley"];
+    const rows = [];
+    let cumulative = 0;
+    let seasonCount = 0;
+
+    allDates.forEach(date => {
+      const daySales = salesData[date] || [];
+      const dayTotalAll = daySales.reduce((s,e)=>s+e.price,0);
+      cumulative += dayTotalAll;
+      seasonCount += daySales.length;
+
+      const byVendor = {};
+      daySales.forEach(e=>{
+        const v = vendedoresOrder.includes(e.vendedor) ? e.vendedor : "Sin asignar";
+        if(!byVendor[v]) byVendor[v] = [];
+        byVendor[v].push(e);
+      });
+
+      Object.keys(byVendor).sort().forEach(v=>{
+        const vSales = byVendor[v];
+        const prodMap = {};
+        vSales.forEach(e=>{
+          if(!prodMap[e.name]) prodMap[e.name] = 0;
+          prodMap[e.name]++;
+        });
+        const productosStr = Object.entries(prodMap).map(([name,qty])=>`${name} x${qty}`).join(", ");
+        const vendorTotal = vSales.reduce((s,e)=>s+e.price,0);
+        rows.push({
+          "Fecha": date,
+          "Vendedor": v,
+          "Productos vendidos": productosStr,
+          "Total del día (vendedor)": vendorTotal,
+          "Total temporada (acumulado a esa fecha)": cumulative
+        });
+      });
+    });
+
+    rows.push({ "Fecha": "", "Vendedor": "", "Productos vendidos": "", "Total del día (vendedor)": "", "Total temporada (acumulado a esa fecha)": "" });
+    rows.push({
+      "Fecha": "TOTAL TEMPORADA",
+      "Vendedor": seasonCount + " ventas",
+      "Productos vendidos": allDates.length + " días",
+      "Total del día (vendedor)": "",
+      "Total temporada (acumulado a esa fecha)": cumulative
+    });
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws["!cols"] = [ {wch:12}, {wch:18}, {wch:45}, {wch:20}, {wch:28} ];
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Ventas");
+    XLSX.writeFile(wb, `ventas_shell_mdz_${todayStr()}.xlsx`);
+  };
+
+  // ---------- Backup manual ----------
+  window.exportData = function(){
+    const payload = { promos, salesData, exportedAt: new Date().toISOString() };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ventas_shell_mdz_backup_${todayStr()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  window.importData = function(event){
+    const file = event.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const data = JSON.parse(reader.result);
+        if(!data.promos || !data.salesData) throw new Error("formato inválido");
+        if(!confirm("Esto reemplaza los datos de TODOS por los del archivo. ¿Continuar?")) return;
+        promos = data.promos;
+        salesData = data.salesData;
+        persist();
+        showError("Datos restaurados correctamente.");
+      } catch(e){
+        showError("El archivo no es un respaldo válido de Ventas Shell MDZ.");
+      }
+      event.target.value = "";
+    };
+    reader.readAsText(file);
+  };
+
+  // ---------- Listeners de selectores de fecha ----------
+  document.getElementById("sellDate").addEventListener("change", (e)=>{
+    sellDate = e.target.value || todayStr();
+    renderVender();
+  });
+  document.getElementById("histDate").addEventListener("change", (e)=>{
+    selectedDate = e.target.value || todayStr();
+    renderHistorial();
+  });
+
+  // ---------- Autenticación ----------
+  window.doSignIn = function(){
+    const email = document.getElementById("authEmail").value.trim();
+    const password = document.getElementById("authPassword").value;
+    const errEl = document.getElementById("authError");
+    const loadingEl = document.getElementById("authLoading");
+    errEl.style.display = "none";
+    if(!email || !password){ errEl.textContent = "Completá email y contraseña."; errEl.style.display="block"; return; }
+    loadingEl.style.display = "block";
+    signInWithEmailAndPassword(auth, email, password)
+      .catch((err) => {
+        loadingEl.style.display = "none";
+        errEl.textContent = "No se pudo ingresar. Revisá el email y la contraseña.";
+        errEl.style.display = "block";
+      });
+  };
+
+  window.doSignOut = function(){
+    if(!confirm("¿Cerrar sesión en este dispositivo?")) return;
+    signOut(auth);
+  };
+
+  onAuthStateChanged(auth, (user) => {
+    const authScreen = document.getElementById("authScreen");
+    const appEl = document.getElementById("app");
+    const loadingEl = document.getElementById("authLoading");
+    if(user){
+      loadingEl.style.display = "none";
+      authScreen.style.display = "none";
+      appEl.style.display = "flex";
+      window.setVendedor(vendedorActivo);
+      subscribeData();
+    } else {
+      if(unsubscribeSnapshot){ unsubscribeSnapshot(); unsubscribeSnapshot = null; }
+      appEl.style.display = "none";
+      authScreen.style.display = "flex";
+    }
+  });
+</script>
+</body>
+</html>
