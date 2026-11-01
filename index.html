@@ -16,7 +16,7 @@
   :root{
     --bg:#0F2027; --bg-elev:#1A3542; --bg-elev2:#22475A;
     --paper:#F6F1E4; --amber:#F5B400; --red:#E85D3D; --green:#4FB477;
-    --text:#F6F1E4; --text-dim:#9FB6BE; --border:#2E4E5C;
+    --text:#F6F1E4; --text-dim:#9FB6BE; --border:#2E4E5C; --blue:#4AA3DF;
   }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   [hidden]{ display:none !important; }
@@ -45,8 +45,11 @@
   .icon-btn{ background:var(--bg-elev); border:1px solid var(--border); color:var(--text-dim);
     border-radius:10px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 
-  #error{ display:none; margin:10px 16px 0; background:rgba(232,93,61,.15);
-    border:1px solid var(--red); border-radius:12px; padding:8px 12px; font-size:13px; }
+  /* Flota encima para no correr los botones mientras se vende. */
+  #error{ display:none; position:fixed; z-index:50; top:calc(env(safe-area-inset-top, 0px) + 10px); left:50%;
+    transform:translateX(-50%); width:calc(100% - 32px); max-width:448px; background:#3A2320;
+    border:1px solid var(--red); border-radius:12px; padding:10px 12px; font-size:13px;
+    box-shadow:0 6px 18px rgba(0,0,0,.45); pointer-events:none; }
 
   main{ flex:1; overflow-y:auto; padding:14px 16px 90px; }
 
@@ -64,17 +67,46 @@
 
   .grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .promo-btn{ position:relative; background:var(--bg-elev); border:1px solid var(--border);
-    border-radius:16px; padding:16px 12px; min-height:92px; display:flex; flex-direction:column;
+    border-radius:16px; padding:14px 10px 10px; display:flex; flex-direction:column;
     justify-content:space-between; color:var(--text); }
   .promo-btn .name{ font-family:'Oswald',sans-serif; font-size:15px; font-weight:600;
-    text-transform:uppercase; line-height:1.2; padding-right:20px; }
+    text-transform:uppercase; line-height:1.2; padding-right:54px; }
   .promo-btn .price{ font-size:17px; color:var(--amber); font-weight:700; }
   .badge{ position:absolute; top:8px; right:8px; background:var(--amber); color:#1A1200;
     border-radius:999px; min-width:22px; height:22px; font-size:12px; font-weight:700;
     display:flex; align-items:center; justify-content:center; padding:0 5px; }
-  .minus-btn{ position:absolute; bottom:8px; right:8px; background:rgba(232,93,61,.18);
+  .minus-btn{ position:absolute; top:8px; right:36px; background:rgba(232,93,61,.18);
     border:1px solid var(--red); color:var(--red); border-radius:999px; width:22px; height:22px;
     display:flex; align-items:center; justify-content:center; font-weight:900; font-size:14px; line-height:1; }
+
+  .pay-btns{ display:flex; flex-direction:column; gap:6px; margin-top:10px; }
+  .pay-btn{ border:none; border-radius:10px; padding:12px 10px; font-family:'Oswald',sans-serif; font-size:15px;
+    font-weight:700; letter-spacing:.04em; text-transform:uppercase; display:flex; justify-content:space-between;
+    align-items:center; gap:6px; }
+  .pay-btn.cash{ background:var(--green); color:#06231A; }
+  .pay-btn.transfer{ background:var(--blue); color:#04202F; }
+  .pay-btn .q{ font-family:'Roboto Mono',monospace; font-size:12px; background:rgba(0,0,0,.2); border-radius:999px; padding:1px 8px; }
+  .pay-split{ display:flex; gap:8px; margin-top:12px; }
+  .pay-box{ flex:1; border-radius:12px; padding:8px 10px; border:1px solid; }
+  .pay-box.cash{ border-color:rgba(79,180,119,.5); background:rgba(79,180,119,.1); }
+  .pay-box.transfer{ border-color:rgba(74,163,223,.5); background:rgba(74,163,223,.1); }
+  .pay-box .n{ font-family:'Oswald',sans-serif; font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.03em; }
+  .pay-box .v{ font-size:20px; font-weight:700; }
+  .pay-box.cash .v{ color:var(--green); }
+  .pay-box.transfer .v{ color:var(--blue); }
+  .shift-bar{ background:var(--bg-elev); border:1px solid var(--border); border-radius:14px; padding:10px 12px;
+    display:flex; justify-content:space-between; align-items:center; gap:10px; margin-top:10px; }
+  .shift-bar.on{ border-color:rgba(79,180,119,.6); }
+  .shift-bar .txt{ font-size:13px; }
+  .shift-bar.on .txt{ color:var(--green); }
+  .btn-ghost-red{ background:transparent; border:1px solid var(--red); color:var(--red); border-radius:12px;
+    padding:9px 14px; font-weight:700; font-size:13px; white-space:nowrap; }
+  .best-block{ background:rgba(79,180,119,.1); border:1px solid rgba(79,180,119,.5); border-radius:14px; padding:12px 14px; margin-bottom:14px; }
+  .best-block .big{ font-family:'Oswald',sans-serif; font-size:24px; font-weight:700; color:var(--green); }
+  .best-block.none{ background:var(--bg-elev); border-color:var(--border); }
+  details.explain{ background:var(--bg-elev); border:1px solid var(--border); border-radius:12px; padding:8px 12px; margin-bottom:12px; font-size:13px; }
+  details.explain summary{ cursor:pointer; color:var(--amber); font-weight:600; }
+  details.explain p{ color:var(--text-dim); line-height:1.5; margin:8px 0 0; }
 
   .empty{ text-align:center; padding:40px 12px; color:var(--text-dim); }
   .empty svg{ opacity:.6; margin-bottom:10px; }
@@ -129,7 +161,9 @@
   .bar-col.best .bar{ background:var(--green); }
   .bar-col.worst .bar{ background:var(--red); }
   .bar-col.mid .bar{ background:var(--amber); opacity:.75; }
+  .bar-col.untested .bar{ background:transparent; border:1px dashed var(--border); height:100% !important; }
   .bar-col .hr{ font-size:10px; color:var(--text-dim); margin-top:4px; }
+  .bar-col.inblock .hr{ color:var(--green); font-weight:700; }
 
   .stat-row{ background:var(--bg-elev); border:1px solid var(--border); border-radius:12px; padding:10px 12px; }
   .stat-row + .stat-row{ margin-top:8px; }
@@ -206,10 +240,18 @@
     <!-- VENDER -->
     <section id="tab-vender" class="tab">
       <input type="date" id="sellDate" />
+      <div class="shift-bar" id="shiftBar">
+        <div>
+          <div class="eyebrow" style="margin:0;">Turno</div>
+          <div class="txt mono" id="shiftText">Sin turno activo</div>
+        </div>
+        <button class="btn-amber tap" id="shiftBtn" onclick="toggleShift()">Empezar turno</button>
+      </div>
       <div class="hero" style="margin-top:10px;">
         <div class="eyebrow" id="sellDateLabel"></div>
         <div class="amount mono" id="sellTotal">$0</div>
         <div class="sub mono" id="sellCount">0 ventas</div>
+        <div id="sellPay"></div>
       </div>
       <div id="ventaEmpty" class="empty" style="display:none;">
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 9.4 7.5 4.21"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
@@ -234,6 +276,7 @@
         </div>
         <div class="sub mono" id="histCount" style="margin-top:0;">0 ventas</div>
       </div>
+      <div id="histPay" style="margin:-4px 0 14px;"></div>
       <div class="chip-row" id="vendorChips"></div>
       <div id="histEmpty" class="empty" style="display:none; padding:30px 12px; font-size:14px;">
         No hay ventas cargadas este día.
@@ -256,12 +299,30 @@
         <button data-range="30">30 días</button>
         <button data-range="all">Todo</button>
       </div>
-      <select id="statsVendor" style="margin-bottom:12px;"></select>
+      <div style="display:flex; gap:8px; margin-bottom:12px;">
+        <select id="statsVendor"></select>
+        <select id="statsWeather">
+          <option value="all">Cualquier clima</option>
+          <option value="sol">☀️ Despejado</option>
+          <option value="nub">⛅ Nublado</option>
+          <option value="llu">🌧️ Lluvia</option>
+          <option value="tor">⛈️ Tormenta</option>
+          <option value="nie">🌫️ Niebla</option>
+        </select>
+      </div>
+
+      <details class="explain">
+        <summary>¿Cómo se calcula el mejor horario?</summary>
+        <p>Al llegar tocá <b>Empezar turno</b> y al irte <b>Terminar turno</b> (si te olvidás, el turno empieza solo con la primera venta). Así la app sabe en qué horas estuviste.</p>
+        <p>Para cada hora se calcula <b>cuánto se vende en promedio por cada hora que estuviste</b>. Las horas en las que no fuiste no cuentan como malas: aparecen como "sin probar".</p>
+        <p>Los primeros días andá probando horarios distintos. Con eso la app te dice qué bloque de 4 horas seguidas conviene, y podés filtrar por clima para ver si cambia cuando llueve o hay sol.</p>
+      </details>
 
       <div class="hero">
         <div class="eyebrow" id="statsRangeLabel">Ventas</div>
         <div class="amount mono" id="statsCount">0</div>
         <div class="sub mono" id="statsSub">$0</div>
+        <div id="statsPay"></div>
       </div>
 
       <div id="statsEmpty" class="empty" style="padding:30px 12px; font-size:14px;" hidden>
@@ -269,19 +330,22 @@
       </div>
 
       <div id="statsBody">
+        <div class="best-block" id="bestBlock"></div>
+
         <div class="chip-row">
           <div class="chip good"><div class="n">Hora que más vende</div><div class="v mono" id="bestHour">–</div></div>
           <div class="chip bad"><div class="n">Hora que menos vende</div><div class="v mono" id="worstHour">–</div></div>
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center;" class="section-title">
-          <div class="eyebrow" style="margin:0;">Ventas por hora</div>
+          <div class="eyebrow" style="margin:0;">Promedio por hora que estuviste</div>
           <div class="seg" id="statsMetric" style="margin:0; width:150px;">
             <button data-metric="count">Cant.</button>
             <button data-metric="amount">$</button>
           </div>
         </div>
         <div class="chart-wrap"><div class="bars" id="hourBars"></div></div>
+        <div class="hint" style="margin-top:6px;">Verde: la mejor hora · rojo: la peor · punteado: hora sin probar · hora en verde abajo: bloque recomendado.</div>
 
         <div class="eyebrow section-title">Qué se vende en cada hora</div>
         <div id="hourProducts"></div>
@@ -411,6 +475,10 @@
   // Ubicación fija de la Shell: el clima se pide para este punto, sin usar el GPS del celular.
   const SHELL_LOCATION = { lat: -38.0055, lon: -57.5426, tz: "America/Argentina/Buenos_Aires", name: "Mar del Plata" };
 
+  // Duración de un turno: se usa para recomendar el mejor bloque y para cerrar turnos olvidados.
+  const SHIFT_HOURS = 4;
+  const PAY_LABEL = { efectivo: "Efectivo", transferencia: "Transferencia" };
+
   const ROLE_LABEL = { admin: "Admin", vendedor: "Vendedor", jefe: "Jefe" };
   const TABS_BY_ROLE = {
     admin:    ["vender", "historial", "stats", "productos", "cuentas"],
@@ -445,6 +513,7 @@
   // ---------- Estado ----------
   let promos = [];
   let salesData = {};
+  let shiftsData = {};     // { fecha: { id: { id, by, vendedor, start, end } } }
   let users = [];          // [{ email, name, role }]
   let me = null;           // { email, name, role }
   let sellDate = todayStr();
@@ -454,6 +523,7 @@
   let statsRange = "7";
   let statsVendor = "all";
   let statsMetric = "count";
+  let statsWeather = "all";
   let authUnsubs = [];
   let dataUnsubs = [];
 
@@ -486,7 +556,7 @@
   function savePromos(){ return saveFields({ promos }); }
   async function replaceAll(){
     try {
-      await setDoc(DOC_REF, { promos, sales: salesData, updatedAt: Date.now() });
+      await setDoc(DOC_REF, { promos, sales: salesData, shifts: shiftsData, updatedAt: Date.now() });
     } catch(e){
       showError("No se pudo guardar en la nube. Revisá tu conexión.");
     }
@@ -501,6 +571,15 @@
       salesData = {};
       Object.entries(data.sales || {}).forEach(([date, list]) => {
         salesData[date] = (list || []).map(e => ({ ...e, price: Number(e.price) || 0 }));
+      });
+      shiftsData = {};
+      Object.entries(data.shifts || {}).forEach(([date, byId]) => {
+        shiftsData[date] = {};
+        Object.entries(byId || {}).forEach(([id, s]) => {
+          const start = Number(s && s.start);
+          if(!start) return;
+          shiftsData[date][id] = { ...s, id, start, end: s.end ? Number(s.end) : null };
+        });
       });
       renderAll();
     }, (err) => {
@@ -517,10 +596,11 @@
   }
   function stopData(){
     dataUnsubs.forEach(u => u()); dataUnsubs = [];
-    promos = []; salesData = {}; users = []; lastAdded = null;
+    promos = []; salesData = {}; shiftsData = {}; users = []; lastAdded = null;
   }
 
   function renderAll(){
+    renderShift();
     renderVender();
     renderHistorial();
     renderStats();
@@ -637,10 +717,91 @@
     return (salesData[date]||[]).reduce((s,e)=>s+e.price,0);
   }
 
-  function addSale(promo){
+  function payTotals(list){
+    const t = { cash: 0, cashN: 0, tr: 0, trN: 0, otherN: 0 };
+    list.forEach(e => {
+      if(e.pay === "transferencia"){ t.tr += e.price; t.trN++; }
+      else if(e.pay === "efectivo"){ t.cash += e.price; t.cashN++; }
+      else t.otherN++;
+    });
+    return t;
+  }
+  function paySplitHtml(list){
+    const t = payTotals(list);
+    return `
+      <div class="pay-split">
+        <div class="pay-box cash"><div class="n">Efectivo · ${t.cashN}</div><div class="v mono">${money(t.cash)}</div></div>
+        <div class="pay-box transfer"><div class="n">Transferencia · ${t.trN}</div><div class="v mono">${money(t.tr)}</div></div>
+      </div>
+      ${t.otherN ? `<div class="hint" style="margin-top:6px;">${plural(t.otherN, "venta anterior", "ventas anteriores")} sin forma de pago.</div>` : ""}`;
+  }
+
+  // ---------- Turnos ----------
+  function shiftDateOf(id){
+    return Object.keys(shiftsData).find(d => shiftsData[d][id]);
+  }
+  function myActiveShift(){
+    if(!me) return null;
+    const today = todayStr();
+    return Object.values(shiftsData[today] || {}).find(s => s.by === me.email && !s.end) || null;
+  }
+  function saveShift(date, s){
+    if(!shiftsData[date]) shiftsData[date] = {};
+    shiftsData[date][s.id] = s;
+    saveFields({ shifts: { [date]: { [s.id]: s } } });
+  }
+  function startShift(){
+    const s = { id: uid(), by: me.email, vendedor: me.name, start: Date.now(), end: null };
+    saveShift(todayStr(), s);
+    renderShift();
+  }
+  window.toggleShift = function(){
     if(!canSell()) return;
+    const active = myActiveShift();
+    if(active){
+      saveShift(shiftDateOf(active.id) || todayStr(), { ...active, end: Date.now() });
+    } else {
+      startShift();
+    }
+    renderShift();
+  };
+  function fmtDuration(ms){
+    const min = Math.max(0, Math.round(ms / 60000));
+    return min < 60 ? `${min} min` : `${Math.floor(min/60)} h ${pad2(min % 60)} min`;
+  }
+  function fmtClock(ts){ return new Date(ts).toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit", hour12:false}); }
+  function renderShift(){
+    const bar = document.getElementById("shiftBar");
+    bar.hidden = !canSell() || sellDate !== todayStr();
+    if(bar.hidden) return;
+    const active = myActiveShift();
+    const txt = document.getElementById("shiftText");
+    const btn = document.getElementById("shiftBtn");
+    bar.classList.toggle("on", !!active);
+    if(active){
+      txt.textContent = `En turno desde ${fmtClock(active.start)} · ${fmtDuration(Date.now() - active.start)}`;
+      btn.textContent = "Terminar turno";
+      btn.className = "btn-ghost-red tap";
+    } else {
+      const done = Object.values(shiftsData[todayStr()] || {}).filter(s => s.by === me.email && s.end);
+      txt.textContent = done.length
+        ? `Hoy: ${done.map(s => fmtClock(s.start) + "–" + fmtClock(s.end)).join(", ")}`
+        : "Sin turno activo";
+      btn.textContent = "Empezar turno";
+      btn.className = "btn-amber tap";
+    }
+  }
+  setInterval(()=>{ if(me && currentTab === "vender") renderShift(); }, 30000);
+
+  function addSale(promo, pay){
+    if(!canSell()) return;
+    // Si se olvidó de marcar el turno, empieza solo con la primera venta de hoy.
+    if(sellDate === todayStr() && !myActiveShift()){
+      startShift();
+      showError("Empezó tu turno automáticamente. Tocá \"Terminar turno\" cuando te vayas.");
+    }
     const now = new Date();
-    const entry = { id: uid(), promoId: promo.id, name: promo.name, price: promo.price,
+    const entry = { id: uid(), promoId: promo.id, name: promo.name, price: promo.price, pay,
       vendedor: me.name, by: me.email, ts: now.getTime(),
       time: now.toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit", hour12:false}) };
     // El clima de ahora solo sirve si la venta es de hoy; si no, se completa después con el histórico.
@@ -686,7 +847,8 @@
     const btn = document.getElementById("undoBtn");
     const visible = currentTab === "vender" && lastAdded;
     btn.style.display = visible ? "flex" : "none";
-    if(lastAdded) document.getElementById("undoLabel").textContent = "Deshacer " + lastAdded.entry.name;
+    if(lastAdded) document.getElementById("undoLabel").textContent =
+      "Deshacer " + lastAdded.entry.name + (lastAdded.entry.pay ? " (" + PAY_LABEL[lastAdded.entry.pay] + ")" : "");
   }
 
   // ---------- Render: Vender ----------
@@ -694,8 +856,11 @@
     document.getElementById("sellDate").value = sellDate;
     document.getElementById("sellDateLabel").textContent = dateLabel(sellDate, true) + (me ? " · vende " + me.name : "");
     document.getElementById("sellTotal").textContent = money(totalOnDate(sellDate));
-    const c = (salesData[sellDate]||[]).length;
+    const dayList = salesData[sellDate] || [];
+    const c = dayList.length;
     document.getElementById("sellCount").textContent = plural(c, "venta", "ventas");
+    document.getElementById("sellPay").innerHTML = paySplitHtml(dayList);
+    renderShift();
 
     const grid = document.getElementById("ventaGrid");
     const empty = document.getElementById("ventaEmpty");
@@ -706,18 +871,26 @@
     grid.style.display = "grid"; empty.style.display = "none";
     grid.innerHTML = "";
     promos.forEach(p=>{
-      const q = qtyOnDate(sellDate, p.id);
+      const mine = dayList.filter(e => e.promoId === p.id);
+      const q = mine.length;
+      const qCash = mine.filter(e => e.pay === "efectivo").length;
+      const qTr = mine.filter(e => e.pay === "transferencia").length;
       const btn = document.createElement("div");
-      btn.className = "promo-btn tap" + (flashId===p.id ? " flash" : "");
+      btn.className = "promo-btn" + (flashId===p.id ? " flash" : "");
       btn.innerHTML = `
         <span class="name">${escapeHtml(p.name)}</span>
         <span class="price mono">${money(p.price)}</span>
         ${q>0 ? `<span class="badge mono">${q}</span>` : ""}
-        ${q>0 ? `<span class="minus-btn tap" data-action="minus">−</span>` : ""}
+        ${q>0 ? `<span class="minus-btn tap" data-action="minus" title="Quitar la última venta">−</span>` : ""}
+        <div class="pay-btns">
+          <button class="pay-btn cash tap" data-pay="efectivo"><span>Efectivo</span>${qCash ? `<span class="q">${qCash}</span>` : ""}</button>
+          <button class="pay-btn transfer tap" data-pay="transferencia"><span>Transferencia</span>${qTr ? `<span class="q">${qTr}</span>` : ""}</button>
+        </div>
       `;
       btn.addEventListener("click", (e)=>{
         if(e.target.closest('[data-action="minus"]')){ removeSale(p); return; }
-        addSale(p);
+        const payBtn = e.target.closest("[data-pay]");
+        if(payBtn) addSale(p, payBtn.dataset.pay);
       });
       grid.appendChild(btn);
     });
@@ -744,6 +917,7 @@
     const daySales = salesData[selectedDate] || [];
     document.getElementById("histTotal").textContent = money(dayTotal);
     document.getElementById("histCount").textContent = plural(daySales.length, "venta", "ventas");
+    document.getElementById("histPay").innerHTML = daySales.length ? paySplitHtml(daySales) : "";
 
     const vendorChips = document.getElementById("vendorChips");
     vendorChips.innerHTML = vendorNames(daySales).map(v=>{
@@ -778,15 +952,18 @@
     return null;
   }
 
-  function statsEntries(){
+  function rangeFrom(){
     const today = todayStr();
-    let from = null;
-    if(statsRange === "hoy") from = today;
-    else if(statsRange !== "all") from = shiftDate(today, -(parseInt(statsRange, 10) - 1));
+    if(statsRange === "hoy") return today;
+    if(statsRange === "all") return null;
+    return shiftDate(today, -(parseInt(statsRange, 10) - 1));
+  }
+
+  function statsEntries(){
+    const from = rangeFrom();
     const out = [];
     datesWithSales().forEach(date => {
       if(from && date < from) return;
-      if(statsRange === "hoy" && date !== today) return;
       salesData[date].forEach(e => {
         if(statsVendor !== "all" && e.vendedor !== statsVendor) return;
         const h = hourOf(e);
@@ -795,6 +972,37 @@
       });
     });
     return out;
+  }
+
+  // Horas en las que había alguien vendiendo ("fecha T hora"). Salen de los turnos marcados;
+  // si ese día no hubo turno, se toma desde la primera hasta la última venta.
+  function presenceSlots(entries){
+    const today = todayStr();
+    const from = rangeFrom();
+    const slots = new Set();
+    const dates = new Set([...Object.keys(shiftsData), ...entries.map(x => x.date)]);
+    dates.forEach(date => {
+      if((from && date < from) || date > today) return;
+      const shifts = Object.values(shiftsData[date] || {})
+        .filter(s => statsVendor === "all" || s.vendedor === statsVendor);
+      if(shifts.length){
+        shifts.forEach(s => {
+          const endOfDay = new Date(s.start); endOfDay.setHours(23, 59, 59, 999);
+          // Turno sin cerrar: si es de hoy sigue abierto; si es viejo, se cuenta como un turno normal.
+          let end = s.end || (date === today ? Date.now() : s.start + SHIFT_HOURS * 3600000);
+          end = Math.min(end, endOfDay.getTime());
+          const h0 = new Date(s.start).getHours();
+          const h1 = new Date(Math.max(end - 1, s.start)).getHours();
+          for(let h = h0; h <= h1; h++) slots.add(date + "T" + pad2(h));
+        });
+      } else {
+        const hs = entries.filter(x => x.date === date).map(x => x.h);
+        if(hs.length) for(let h = Math.min(...hs); h <= Math.max(...hs); h++) slots.add(date + "T" + pad2(h));
+      }
+    });
+    // Una venta prueba que había alguien en esa hora aunque no se haya marcado el turno.
+    entries.forEach(x => slots.add(x.date + "T" + pad2(x.h)));
+    return [...slots];
   }
 
   function topProducts(items, n){
@@ -814,23 +1022,25 @@
     sel.value = statsVendor;
   }
 
-  // Agrupa ventas por una clave (clima o temperatura) y calcula ventas por hora con esa condición.
-  function groupStats(entries, keyFn){
+  // Agrupa por clima o temperatura: ventas con esa condición / horas presentes con esa condición.
+  function groupStats(entries, slotList, keyFn){
     const groups = {};
+    const get = g => groups[g.k] || (groups[g.k] = { label: g.label, icon: g.icon || "", items: [], amount: 0, present: 0 });
+    slotList.forEach(sl => { const g = sl.w && keyFn(sl.w); if(g) get(g).present++; });
     entries.forEach(x => {
-      const g = keyFn(x);
+      const g = keyFn(x.w);
       if(!g) return;
-      if(!groups[g.k]) groups[g.k] = { label: g.label, icon: g.icon || "", items: [], amount: 0, slots: new Set() };
-      groups[g.k].items.push(x);
-      groups[g.k].amount += x.e.price;
-      groups[g.k].slots.add(x.date + "T" + x.h);
+      const grp = get(g);
+      grp.items.push(x);
+      grp.amount += x.e.price;
     });
-    return Object.values(groups).sort((a,b) => b.items.length - a.items.length);
+    return Object.values(groups).filter(g => g.present > 0)
+      .sort((a,b) => b.items.length / b.present - a.items.length / a.present);
   }
   function groupRowsHtml(groups){
-    const max = Math.max(...groups.map(g => g.items.length / g.slots.size));
+    const max = Math.max(...groups.map(g => g.items.length / g.present)) || 1;
     return groups.map(g => {
-      const perHour = g.items.length / g.slots.size;
+      const perHour = g.items.length / g.present;
       const top = topProducts(g.items, 2).map(([n,q]) => `${escapeHtml(n)} x${q}`).join(", ");
       return `
         <div class="stat-row">
@@ -838,8 +1048,8 @@
             <span class="lbl">${g.icon} ${escapeHtml(g.label)}</span>
             <span class="num mono">${perHour.toFixed(1)} ventas/hora</span>
           </div>
-          <div class="det mono">${plural(g.items.length, "venta", "ventas")} · ${money(g.amount)} · ${plural(g.slots.size, "hora con ventas", "horas con ventas")}</div>
-          <div class="det">Lo más vendido: ${top}</div>
+          <div class="det mono">${plural(g.items.length, "venta", "ventas")} · ${money(g.amount)} · ${plural(g.present, "hora presente", "horas presentes")}</div>
+          ${top ? `<div class="det">Lo más vendido: ${top}</div>` : ""}
           <div class="meter"><div style="width:${Math.round(perHour / max * 100)}%"></div></div>
         </div>`;
     }).join("");
@@ -848,9 +1058,13 @@
   function renderStats(){
     document.querySelectorAll("#statsRange button").forEach(b => b.classList.toggle("active", b.dataset.range === statsRange));
     document.querySelectorAll("#statsMetric button").forEach(b => b.classList.toggle("active", b.dataset.metric === statsMetric));
+    document.getElementById("statsWeather").value = statsWeather;
     renderStatsVendorOptions();
 
-    const entries = statsEntries();
+    const all = statsEntries();
+    const groupKey = w => { const g = w && weatherGroup(w.c); return g ? g.k : null; };
+    const entries = statsWeather === "all" ? all : all.filter(x => groupKey(x.w) === statsWeather);
+
     const rangeLabel = { hoy: "Ventas de hoy", "7": "Últimos 7 días", "30": "Últimos 30 días", all: "Toda la temporada" }[statsRange];
     document.getElementById("statsRangeLabel").textContent = rangeLabel;
     const amount = entries.reduce((s,x) => s + x.e.price, 0);
@@ -858,59 +1072,103 @@
     document.getElementById("statsCount").textContent = plural(entries.length, "venta", "ventas");
     document.getElementById("statsSub").textContent = money(amount) + " · " + plural(days, "día", "días") +
       (days > 1 ? " · prom. " + Math.round(entries.length / days) + " ventas/día" : "");
+    document.getElementById("statsPay").innerHTML = entries.length ? paySplitHtml(entries.map(x => x.e)) : "";
+
+    // Horas presentes, cada una con su clima (guardado en las ventas o del histórico).
+    const storedW = {};
+    all.forEach(x => { if(x.e.weather) storedW[x.date + "T" + pad2(x.h)] = x.e.weather; });
+    const slotList = presenceSlots(all).map(s => ({ s, h: parseInt(s.slice(11), 10),
+      w: storedW[s] || (hourlyWeather && hourlyWeather[s]) || null }));
+    const slots = statsWeather === "all" ? slotList : slotList.filter(sl => groupKey(sl.w) === statsWeather);
 
     const emptyEl = document.getElementById("statsEmpty");
     const bodyEl = document.getElementById("statsBody");
-    if(entries.length === 0){ emptyEl.hidden = false; bodyEl.hidden = true; return; }
+    if(slots.length === 0){ emptyEl.hidden = false; bodyEl.hidden = true; return; }
     emptyEl.hidden = true; bodyEl.hidden = false;
 
-    // Por hora
-    const cnt = new Array(24).fill(0), amt = new Array(24).fill(0);
+    const present = new Array(24).fill(0), cnt = new Array(24).fill(0), amt = new Array(24).fill(0);
+    slots.forEach(sl => present[sl.h]++);
     entries.forEach(x => { cnt[x.h]++; amt[x.h] += x.e.price; });
-    const vals = statsMetric === "count" ? cnt : amt;
-    const active = cnt.map((c,h) => c > 0 ? h : -1).filter(h => h >= 0);
-    const minH = Math.min(...active), maxH = Math.max(...active);
-    let best = minH, worst = minH;
-    for(let h = minH; h <= maxH; h++){
-      if(vals[h] > vals[best]) best = h;
-      if(vals[h] < vals[worst]) worst = h;
-    }
-    const fmtVal = v => statsMetric === "count" ? String(v) : money(v);
+    const rateC = h => present[h] ? cnt[h] / present[h] : 0;
+    const rateA = h => present[h] ? amt[h] / present[h] : 0;
+    const rate = statsMetric === "count" ? rateC : rateA;
+    const fmtRate = v => statsMetric === "count" ? v.toFixed(1) + " ventas/h" : money(v) + "/h";
     const hourLabel = h => `${pad2(h)}–${pad2((h+1) % 24)} h`;
-    document.getElementById("bestHour").textContent = hourLabel(best) + " · " + fmtVal(vals[best]);
-    document.getElementById("worstHour").textContent = minH === maxH ? "–" : hourLabel(worst) + " · " + fmtVal(vals[worst]);
 
-    const maxVal = Math.max(...vals);
+    const tested = [];
+    for(let h = 0; h < 24; h++) if(present[h] > 0) tested.push(h);
+    const minH = tested[0], maxH = tested[tested.length - 1];
+    let best = tested[0], worst = tested[0];
+    tested.forEach(h => { if(rate(h) > rate(best)) best = h; if(rate(h) < rate(worst)) worst = h; });
+    document.getElementById("bestHour").textContent = hourLabel(best) + " · " + fmtRate(rate(best));
+    document.getElementById("worstHour").textContent = tested.length < 2 ? "–" : hourLabel(worst) + " · " + fmtRate(rate(worst));
+
+    // Mejor bloque de SHIFT_HOURS horas seguidas, todas probadas.
+    let block = null;
+    for(let s = 0; s + SHIFT_HOURS <= 24; s++){
+      const hs = Array.from({ length: SHIFT_HOURS }, (_, i) => s + i);
+      if(!hs.every(h => present[h] > 0)) continue;
+      const c = hs.reduce((t,h) => t + rateC(h), 0);
+      const a = hs.reduce((t,h) => t + rateA(h), 0);
+      const score = statsMetric === "count" ? c : a;
+      if(!block || score > block.score) block = { s, c, a, score, minDays: Math.min(...hs.map(h => present[h])) };
+    }
+    const blockEl = document.getElementById("bestBlock");
+    blockEl.classList.toggle("none", !block);
+    const weatherSel = document.getElementById("statsWeather");
+    const climaTxt = statsWeather === "all" ? "" : " · " + weatherSel.options[weatherSel.selectedIndex].textContent;
+    if(block){
+      blockEl.innerHTML = `
+        <div class="eyebrow" style="margin-bottom:2px;">Mejor horario para ir (${SHIFT_HOURS} h)${escapeHtml(climaTxt)}</div>
+        <div class="big mono">${pad2(block.s)}:00 a ${pad2((block.s + SHIFT_HOURS) % 24)}:00</div>
+        <div class="sub mono" style="font-size:13px; color:var(--text);">≈ ${Math.round(block.c)} ventas · ≈ ${money(block.a)} por turno</div>
+        <div class="hint" style="margin-top:4px;">${block.minDays < 3
+          ? `Cada una de esas horas se probó al menos ${plural(block.minDays, "vez", "veces")}: todavía son pocos datos, seguí probando otros horarios.`
+          : `Basado en al menos ${block.minDays} días por cada hora.`}</div>`;
+    } else {
+      blockEl.innerHTML = `
+        <div class="eyebrow" style="margin-bottom:2px;">Mejor horario para ir (${SHIFT_HOURS} h)${escapeHtml(climaTxt)}</div>
+        <div class="hint">Todavía no hay ${SHIFT_HOURS} horas seguidas probadas. Andá probando distintos horarios y marcá el turno.</div>`;
+    }
+
+    // Barras: promedio por hora presente.
+    const maxVal = Math.max(...tested.map(rate)) || 1;
     let bars = "";
     for(let h = minH; h <= maxH; h++){
-      const cls = h === best ? "best" : (h === worst && minH !== maxH ? "worst" : "mid");
-      const pct = maxVal ? Math.max(2, vals[h] / maxVal * 100) : 2;
-      const short = statsMetric === "count" ? vals[h] : (vals[h] >= 1000 ? Math.round(vals[h]/1000) + "k" : vals[h]);
-      bars += `<div class="bar-col ${cls}"><div class="val mono">${short}</div><div class="bar" style="height:${pct}%"></div><div class="hr mono">${pad2(h)}</div></div>`;
+      const inBlock = block && h >= block.s && h < block.s + SHIFT_HOURS ? " inblock" : "";
+      if(!present[h]){
+        bars += `<div class="bar-col untested${inBlock}"><div class="val">–</div><div class="bar"></div><div class="hr mono">${pad2(h)}</div></div>`;
+        continue;
+      }
+      const v = rate(h);
+      const cls = h === best ? "best" : (h === worst && tested.length > 1 ? "worst" : "mid");
+      const short = statsMetric === "count" ? v.toFixed(1) : (v >= 1000 ? Math.round(v / 1000) + "k" : Math.round(v));
+      bars += `<div class="bar-col ${cls}${inBlock}"><div class="val mono">${short}</div><div class="bar" style="height:${Math.max(2, v / maxVal * 100)}%"></div><div class="hr mono">${pad2(h)}</div></div>`;
     }
     document.getElementById("hourBars").innerHTML = bars;
 
     // Qué se vende en cada hora
     const byHour = {};
     entries.forEach(x => { (byHour[x.h] = byHour[x.h] || []).push(x); });
-    const maxCnt = Math.max(...cnt);
-    document.getElementById("hourProducts").innerHTML = Object.keys(byHour).map(Number).sort((a,b)=>a-b).map(h => {
-      const items = byHour[h];
+    const maxRateC = Math.max(...tested.map(rateC)) || 1;
+    document.getElementById("hourProducts").innerHTML = tested.map(h => {
+      const items = byHour[h] || [];
       const top = topProducts(items, 3).map(([n,q]) => `${escapeHtml(n)} x${q}`).join(", ");
       return `
         <div class="stat-row">
           <div class="top">
             <span class="lbl mono">${hourLabel(h)}</span>
-            <span class="num mono">${plural(items.length, "venta", "ventas")} · ${money(amt[h])}</span>
+            <span class="num mono">${rateC(h).toFixed(1)} ventas/h · ${money(rateA(h))}/h</span>
           </div>
-          <div class="det">${top}</div>
-          <div class="meter"><div style="width:${Math.round(items.length / maxCnt * 100)}%"></div></div>
+          <div class="det mono">Probada ${plural(present[h], "vez", "veces")} · ${plural(items.length, "venta", "ventas")} en total</div>
+          ${top ? `<div class="det">${top}</div>` : `<div class="det">No se vendió nada en esta hora.</div>`}
+          <div class="meter"><div style="width:${Math.round(rateC(h) / maxRateC * 100)}%"></div></div>
         </div>`;
     }).join("");
 
-    // Clima
-    const withW = entries.filter(x => x.w);
-    const missing = entries.length - withW.length;
+    // Clima y temperatura (siempre con todos los climas, para poder comparar).
+    const withW = all.filter(x => x.w);
+    const missing = all.length - withW.length;
     const noteEl = document.getElementById("weatherNote");
     if(missing > 0 && !hourlyWeather){
       noteEl.textContent = "Buscando el clima de ventas anteriores…";
@@ -918,14 +1176,14 @@
     } else if(missing > 0){
       noteEl.textContent = `${plural(missing, "venta", "ventas")} sin dato de clima (más de 3 meses o sin conexión).`;
     } else {
-      noteEl.textContent = "Ventas por hora: cuántas ventas hubo en promedio en cada hora con ese clima.";
+      noteEl.textContent = "Cuánto se vende en promedio por cada hora que estuviste con ese clima.";
     }
-    document.getElementById("weatherStats").innerHTML = withW.length
-      ? groupRowsHtml(groupStats(withW, x => weatherGroup(x.w.c)))
-      : `<div class="hint">Todavía no hay datos de clima.</div>`;
-    document.getElementById("tempStats").innerHTML = withW.length
-      ? groupRowsHtml(groupStats(withW, x => tempBand(x.w.t)))
-      : `<div class="hint">Todavía no hay datos de temperatura.</div>`;
+    const wGroups = groupStats(withW, slotList, w => weatherGroup(w.c));
+    const tGroups = groupStats(withW, slotList, w => tempBand(w.t));
+    document.getElementById("weatherStats").innerHTML = wGroups.length
+      ? groupRowsHtml(wGroups) : `<div class="hint">Todavía no hay datos de clima.</div>`;
+    document.getElementById("tempStats").innerHTML = tGroups.length
+      ? groupRowsHtml(tGroups) : `<div class="hint">Todavía no hay datos de temperatura.</div>`;
   }
 
   document.querySelectorAll("#statsRange button").forEach(b => b.addEventListener("click", ()=>{
@@ -936,6 +1194,9 @@
   }));
   document.getElementById("statsVendor").addEventListener("change", (e)=>{
     statsVendor = e.target.value; renderStats();
+  });
+  document.getElementById("statsWeather").addEventListener("change", (e)=>{
+    statsWeather = e.target.value; renderStats();
   });
 
   // ---------- Render: Productos ----------
@@ -1013,7 +1274,7 @@
     if(!isAdmin()) return;
     if(!confirm("Esto borra todos los productos y todas las ventas PARA TODOS. ¿Seguro?")) return;
     if(!confirm("Confirmá de nuevo: se borra TODO y no se puede deshacer.")) return;
-    promos = []; salesData = {};
+    promos = []; salesData = {}; shiftsData = {};
     replaceAll();
     renderAll();
   };
@@ -1096,7 +1357,7 @@
       (salesData[date]||[]).forEach(e => { if(!productNames.includes(e.name)) productNames.push(e.name); });
     });
 
-    const header = ["Fecha", "Vendedor", ...productNames, "Total del día (vendedor)", "Total temporada (acumulado)"];
+    const header = ["Fecha", "Vendedor", ...productNames, "Efectivo $", "Transferencia $", "Total del día (vendedor)", "Total temporada (acumulado)"];
     const aoa = [header];
 
     let cumulative = 0;
@@ -1126,23 +1387,25 @@
         productNames.forEach(n => qtyMap[n] = 0);
         vSales.forEach(e => { qtyMap[e.name] = (qtyMap[e.name]||0) + 1; });
         const vendorTotal = vSales.reduce((s,e)=>s+e.price,0);
-        aoa.push([date, v, ...productNames.map(n=>qtyMap[n]), vendorTotal, cumulative]);
+        const pt = payTotals(vSales);
+        aoa.push([date, v, ...productNames.map(n=>qtyMap[n]), pt.cash, pt.tr, vendorTotal, cumulative]);
       });
     });
 
     // Fila en blanco + resumen de temporada por producto
     aoa.push(new Array(header.length).fill(""));
-    aoa.push(["CANTIDAD VENDIDA (temporada)", "", ...productNames.map(n=>qtyTotals[n]||0), "", ""]);
-    aoa.push(["TOTAL $ VENDIDO (temporada)", "", ...productNames.map(n=>moneyTotals[n]||0), "", ""]);
+    const seasonPay = payTotals(allDates.flatMap(d => salesData[d] || []));
+    aoa.push(["CANTIDAD VENDIDA (temporada)", "", ...productNames.map(n=>qtyTotals[n]||0), "", "", "", ""]);
+    aoa.push(["TOTAL $ VENDIDO (temporada)", "", ...productNames.map(n=>moneyTotals[n]||0), "", "", "", ""]);
     aoa.push(new Array(header.length).fill(""));
     aoa.push(["TOTAL TEMPORADA", seasonCount + " ventas · " + allDates.length + " días",
-      ...productNames.map(()=>""), "", cumulative]);
+      ...productNames.map(()=>""), seasonPay.cash, seasonPay.tr, "", cumulative]);
 
     const ws = XLSX.utils.aoa_to_sheet(aoa);
     ws["!cols"] = [
       {wch:12}, {wch:18},
       ...productNames.map(()=>({wch:16})),
-      {wch:20}, {wch:22}
+      {wch:12}, {wch:15}, {wch:20}, {wch:22}
     ];
 
     // Hoja por hora (toda la temporada)
@@ -1162,26 +1425,36 @@
     wsHour["!cols"] = [{wch:16}, {wch:10}, {wch:12}, {wch:30}];
 
     // Hoja con cada venta, su hora y el clima
-    const detailRows = [["Fecha", "Hora", "Vendedor", "Producto", "Precio", "Temperatura °C", "Clima"]];
+    const detailRows = [["Fecha", "Hora", "Vendedor", "Producto", "Precio", "Pago", "Temperatura °C", "Clima"]];
     allDates.forEach(date => (salesData[date]||[]).forEach(e => {
       const h = hourOf(e);
       const w = h == null ? null : weatherOf(date, e, h);
       const g = w ? weatherGroup(w.c) : null;
-      detailRows.push([date, e.time || "", e.vendedor || "", e.name, e.price, w ? w.t : "", g ? g.label : ""]);
+      detailRows.push([date, e.time || "", e.vendedor || "", e.name, e.price, PAY_LABEL[e.pay] || "", w ? w.t : "", g ? g.label : ""]);
     }));
     const wsDetail = XLSX.utils.aoa_to_sheet(detailRows);
-    wsDetail["!cols"] = [{wch:12}, {wch:8}, {wch:18}, {wch:24}, {wch:10}, {wch:15}, {wch:12}];
+    wsDetail["!cols"] = [{wch:12}, {wch:8}, {wch:18}, {wch:24}, {wch:10}, {wch:14}, {wch:15}, {wch:12}];
+
+    // Hoja de turnos
+    const shiftRows = [["Fecha", "Vendedor", "Inicio", "Fin", "Horas"]];
+    Object.keys(shiftsData).sort().forEach(date => Object.values(shiftsData[date]).sort((a,b)=>a.start-b.start).forEach(s => {
+      shiftRows.push([date, s.vendedor || "", fmtClock(s.start), s.end ? fmtClock(s.end) : "sin cerrar",
+        s.end ? Math.round((s.end - s.start) / 360000) / 10 : ""]);
+    }));
+    const wsShifts = XLSX.utils.aoa_to_sheet(shiftRows);
+    wsShifts["!cols"] = [{wch:12}, {wch:18}, {wch:8}, {wch:10}, {wch:8}];
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Ventas");
     XLSX.utils.book_append_sheet(wb, wsHour, "Por hora");
     XLSX.utils.book_append_sheet(wb, wsDetail, "Detalle y clima");
+    XLSX.utils.book_append_sheet(wb, wsShifts, "Turnos");
     XLSX.writeFile(wb, `ventas_shell_mdz_${todayStr()}.xlsx`);
   };
 
   // ---------- Backup manual ----------
   window.exportData = function(){
-    const payload = { promos, salesData, exportedAt: new Date().toISOString() };
+    const payload = { promos, salesData, shiftsData, exportedAt: new Date().toISOString() };
     const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -1204,6 +1477,7 @@
         if(!confirm("Esto reemplaza los datos de TODOS por los del archivo. ¿Continuar?")) return;
         promos = data.promos;
         salesData = data.salesData;
+        shiftsData = data.shiftsData || {};
         replaceAll();
         renderAll();
         showError("Datos restaurados correctamente.");
