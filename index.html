@@ -496,8 +496,12 @@
     stopData();
     dataUnsubs.push(onSnapshot(DOC_REF, (snap) => {
       const data = snap.exists() ? snap.data() : { promos: [], sales: {} };
-      promos = data.promos || [];
-      salesData = data.sales || {};
+      // Los precios se fuerzan a número: así nada guardado como texto termina metido en el HTML.
+      promos = (data.promos || []).map(p => ({ ...p, price: Number(p.price) || 0 }));
+      salesData = {};
+      Object.entries(data.sales || {}).forEach(([date, list]) => {
+        salesData[date] = (list || []).map(e => ({ ...e, price: Number(e.price) || 0 }));
+      });
       renderAll();
     }, (err) => {
       showError("No se pudo sincronizar: " + err.message);
@@ -970,7 +974,7 @@
     row.innerHTML = `
       <div style="display:flex; flex-direction:column; gap:6px; width:100%;">
         <input type="text" data-field="name" value="${escapeHtml(p.name)}" />
-        <input type="number" data-field="price" value="${p.price}" inputmode="decimal" />
+        <input type="number" data-field="price" value="${Number(p.price) || 0}" inputmode="decimal" />
         <div style="display:flex; gap:8px;">
           <button class="tap" style="flex:1; background:var(--green); border:none; border-radius:8px; padding:8px 0; color:#06231A; font-weight:700;" data-action="save">Guardar</button>
           <button class="tap" style="flex:1; background:transparent; border:1px solid var(--border); border-radius:8px; padding:8px 0; color:var(--text-dim);" data-action="cancel">Cancelar</button>
