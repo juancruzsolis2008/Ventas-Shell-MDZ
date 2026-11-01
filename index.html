@@ -282,13 +282,6 @@
         No hay ventas cargadas este día.
       </div>
       <div id="histList"></div>
-
-      <div class="eyebrow section-title">Reporte</div>
-      <div class="field-card">
-        <button class="tap" style="background:var(--green); border:none; color:#06231A; border-radius:10px; padding:10px 0; font-weight:700; font-size:13px;" onclick="exportExcel()">
-          Descargar Excel (ventas, horas y clima)
-        </button>
-      </div>
     </section>
 
     <!-- ESTADÍSTICAS -->
@@ -323,6 +316,13 @@
         <div class="amount mono" id="statsCount">0</div>
         <div class="sub mono" id="statsSub">$0</div>
         <div id="statsPay"></div>
+      </div>
+
+      <div class="field-card">
+        <button class="tap" id="excelBtn" style="background:var(--green); border:none; color:#06231A; border-radius:10px; padding:12px 0; font-weight:700; font-size:14px;" onclick="exportExcel()">
+          Descargar reporte en Excel
+        </button>
+        <div class="hint" id="excelHint">Usa el período y el vendedor elegidos arriba. Trae un resumen con conclusiones y gráficos, y tablas por día, por hora, por clima, por producto, cada venta y los turnos.</div>
       </div>
 
       <div id="statsEmpty" class="empty" style="padding:30px 12px; font-size:14px;" hidden>
@@ -438,7 +438,6 @@
   </nav>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
@@ -611,7 +610,7 @@
   // ---------- Clima (Open-Meteo, gratis y sin clave) ----------
   let currentWeather = null;   // { t, c, p, at }
   let hourlyWeather = null;    // { "YYYY-MM-DDTHH": { t, c, p } }
-  let hourlyLoading = false;
+  let hourlyPromise = null;
 
   function weatherUrl(params){
     return `https://api.open-meteo.com/v1/forecast?latitude=${SHELL_LOCATION.lat}&longitude=${SHELL_LOCATION.lon}`
@@ -638,21 +637,25 @@
   });
 
   // Clima hora por hora de los últimos 92 días, para ventas que se cargaron sin clima.
-  async function loadHourlyWeather(){
-    if(hourlyWeather || hourlyLoading) return;
-    hourlyLoading = true;
-    try {
-      const r = await fetch(weatherUrl("hourly=temperature_2m,weather_code,precipitation&past_days=92&forecast_days=1"));
-      const j = await r.json();
-      const map = {};
-      j.hourly.time.forEach((t, i) => {
-        map[t.slice(0,13)] = { t: j.hourly.temperature_2m[i], c: j.hourly.weather_code[i], p: j.hourly.precipitation[i] };
-      });
-      hourlyWeather = map;
-      renderStats();
-    } catch(e){
-      hourlyLoading = false;
+  function loadHourlyWeather(){
+    if(hourlyWeather) return Promise.resolve();
+    if(!hourlyPromise){
+      hourlyPromise = (async () => {
+        try {
+          const r = await fetch(weatherUrl("hourly=temperature_2m,weather_code,precipitation&past_days=92&forecast_days=1"));
+          const j = await r.json();
+          const map = {};
+          j.hourly.time.forEach((t, i) => {
+            map[t.slice(0,13)] = { t: j.hourly.temperature_2m[i], c: j.hourly.weather_code[i], p: j.hourly.precipitation[i] };
+          });
+          hourlyWeather = map;
+          renderStats();
+        } catch(e){
+          hourlyPromise = null;   // se reintenta la próxima vez
+        }
+      })();
     }
+    return hourlyPromise;
   }
 
   function weatherGroup(c){
@@ -1338,118 +1341,489 @@
   }
 
   // ---------- Reporte Excel ----------
-  window.exportExcel = function(){
-    if(typeof XLSX === "undefined"){
-      showError("No se pudo cargar el generador de Excel. Revisá tu conexión.");
-      return;
-    }
-    const allDates = datesWithSales().sort((a,b)=>a.localeCompare(b));
-    if(allDates.length === 0){
-      showError("Todavía no hay ventas cargadas para exportar.");
-      return;
-    }
-
-    // Nombres de producto: primero los productos actuales, después cualquier producto
-    // ya borrado que haya quedado en ventas viejas (para no perder esas columnas).
-    const productNames = [];
-    promos.forEach(p => { if(!productNames.includes(p.name)) productNames.push(p.name); });
-    allDates.forEach(date => {
-      (salesData[date]||[]).forEach(e => { if(!productNames.includes(e.name)) productNames.push(e.name); });
+  // ExcelJS (tablas con formato e imágenes) y Chart.js (gráficos) se cargan solo al descargar.
+  function loadScript(src){
+    return new Promise((resolve, reject) => {
+      if(document.querySelector(`script[src="${src}"]`)) return resolve();
+      const s = document.createElement("script");
+      s.src = src; s.onload = resolve; s.onerror = () => reject(new Error("No se pudo cargar " + src));
+      document.head.appendChild(s);
     });
+  }
+  const EXCELJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js";
+  const CHARTJS_URL = "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js";
 
-    const header = ["Fecha", "Vendedor", ...productNames, "Efectivo $", "Transferencia $", "Total del día (vendedor)", "Total temporada (acumulado)"];
-    const aoa = [header];
+  const XL = {
+    dark: "FF0F2027", amber: "FFF5B400", amberSoft: "FFFFF4D6", green: "FF4FB477", red: "FFE85D3D",
+    blue: "FF4AA3DF", zebra: "FFF3F6F7", border: "FFD5DEE2", white: "FFFFFFFF", dim: "FF5B7480"
+  };
+  const FMT_MONEY = '"$"#,##0';
+  const FMT_DEC = '0.0';
+  const FMT_PCT = '0%';
+  const WEATHER_PHRASE = { Despejado: "cielo despejado", Nublado: "cielo nublado", Lluvia: "lluvia", Tormenta: "tormenta", Niebla: "niebla", Nieve: "nieve" };
+  const WEATHER_COLOR = { Despejado: "#F5B400", Nublado: "#8C9AA0", Lluvia: "#4AA3DF", Tormenta: "#E85D3D", Niebla: "#B7C2C6", Nieve: "#B48CDF" };
+  const WEEKDAYS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+  function weekdayOf(date){ const [y,m,d] = date.split("-").map(Number); return WEEKDAYS[new Date(y, m-1, d).getDay()]; }
+  function fmtNum1(n){ return n.toLocaleString("es-AR", { minimumFractionDigits: 1, maximumFractionDigits: 1 }); }
+  function hourRange(h){ return `${pad2(h)}:00 a ${pad2((h+1) % 24)}:00`; }
+  function mostCommon(arr){
+    const m = {}; arr.forEach(v => { if(v != null) m[v] = (m[v] || 0) + 1; });
+    const top = Object.entries(m).sort((a,b) => b[1] - a[1])[0];
+    return top ? top[0] : null;
+  }
 
-    let cumulative = 0;
-    let seasonCount = 0;
-    const qtyTotals = {};
-    const moneyTotals = {};
-    productNames.forEach(n => { qtyTotals[n] = 0; moneyTotals[n] = 0; });
+  // Junta todos los números del reporte con los mismos criterios que la pestaña Estadísticas.
+  function buildReport(){
+    const all = statsEntries();
+    const storedW = {};
+    all.forEach(x => { if(x.e.weather) storedW[x.date + "T" + pad2(x.h)] = x.e.weather; });
+    const slots = presenceSlots(all).map(s => ({ s, date: s.slice(0,10), h: parseInt(s.slice(11), 10),
+      w: storedW[s] || (hourlyWeather && hourlyWeather[s]) || null }));
+    const slotW = {}; slots.forEach(sl => { slotW[sl.s] = sl.w; });
 
-    allDates.forEach(date => {
-      const daySales = salesData[date] || [];
-      const dayTotalAll = daySales.reduce((s,e)=>s+e.price,0);
-      cumulative += dayTotalAll;
-      seasonCount += daySales.length;
+    const amount = all.reduce((s,x) => s + x.e.price, 0);
+    const dates = [...new Set([...all.map(x => x.date), ...slots.map(sl => sl.date)])].sort();
+    const pay = payTotals(all.map(x => x.e));
 
-      const byVendor = {};
-      daySales.forEach(e=>{
-        const v = e.vendedor || "Sin asignar";
-        if(!byVendor[v]) byVendor[v] = [];
-        byVendor[v].push(e);
-        qtyTotals[e.name] = (qtyTotals[e.name]||0) + 1;
-        moneyTotals[e.name] = (moneyTotals[e.name]||0) + e.price;
-      });
-
-      Object.keys(byVendor).sort().forEach(v=>{
-        const vSales = byVendor[v];
-        const qtyMap = {};
-        productNames.forEach(n => qtyMap[n] = 0);
-        vSales.forEach(e => { qtyMap[e.name] = (qtyMap[e.name]||0) + 1; });
-        const vendorTotal = vSales.reduce((s,e)=>s+e.price,0);
-        const pt = payTotals(vSales);
-        aoa.push([date, v, ...productNames.map(n=>qtyMap[n]), pt.cash, pt.tr, vendorTotal, cumulative]);
-      });
-    });
-
-    // Fila en blanco + resumen de temporada por producto
-    aoa.push(new Array(header.length).fill(""));
-    const seasonPay = payTotals(allDates.flatMap(d => salesData[d] || []));
-    aoa.push(["CANTIDAD VENDIDA (temporada)", "", ...productNames.map(n=>qtyTotals[n]||0), "", "", "", ""]);
-    aoa.push(["TOTAL $ VENDIDO (temporada)", "", ...productNames.map(n=>moneyTotals[n]||0), "", "", "", ""]);
-    aoa.push(new Array(header.length).fill(""));
-    aoa.push(["TOTAL TEMPORADA", seasonCount + " ventas · " + allDates.length + " días",
-      ...productNames.map(()=>""), seasonPay.cash, seasonPay.tr, "", cumulative]);
-
-    const ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws["!cols"] = [
-      {wch:12}, {wch:18},
-      ...productNames.map(()=>({wch:16})),
-      {wch:12}, {wch:15}, {wch:20}, {wch:22}
-    ];
-
-    // Hoja por hora (toda la temporada)
-    const hourRows = [["Hora", "Ventas", "Total $", "Producto más vendido"]];
-    const byHour = {};
-    allDates.forEach(date => (salesData[date]||[]).forEach(e => {
-      const h = hourOf(e); if(h == null) return;
-      (byHour[h] = byHour[h] || []).push({ date, h, e });
-    }));
-    Object.keys(byHour).map(Number).sort((a,b)=>a-b).forEach(h => {
-      const items = byHour[h];
+    // Por hora
+    const hours = [];
+    for(let h = 0; h < 24; h++){
+      const present = slots.filter(sl => sl.h === h).length;
+      const items = all.filter(x => x.h === h);
+      if(!present && !items.length) continue;
+      const amt = items.reduce((s,x) => s + x.e.price, 0);
       const top = topProducts(items, 1)[0];
-      hourRows.push([`${pad2(h)}:00 a ${pad2((h+1)%24)}:00`, items.length,
-        items.reduce((s,x)=>s+x.e.price,0), top ? `${top[0]} (${top[1]})` : ""]);
+      const wk = mostCommon(slots.filter(sl => sl.h === h && sl.w).map(sl => weatherGroup(sl.w.c).label));
+      hours.push({ h, present, count: items.length, amount: amt,
+        rateC: present ? items.length / present : 0, rateA: present ? amt / present : 0,
+        top: top ? `${top[0]} (${top[1]})` : "—", weather: wk || "—" });
+    }
+
+    // Mejor bloque de SHIFT_HOURS horas seguidas
+    let block = null;
+    for(let s = 0; s + SHIFT_HOURS <= 24; s++){
+      const hs = Array.from({ length: SHIFT_HOURS }, (_, i) => hours.find(x => x.h === s + i));
+      if(!hs.every(x => x && x.present > 0)) continue;
+      const c = hs.reduce((t,x) => t + x.rateC, 0), a = hs.reduce((t,x) => t + x.rateA, 0);
+      if(!block || c > block.c) block = { s, c, a, minDays: Math.min(...hs.map(x => x.present)) };
+    }
+
+    // Por día
+    const days = dates.map(date => {
+      const items = all.filter(x => x.date === date);
+      const daySlots = slots.filter(sl => sl.date === date);
+      const shifts = Object.values(shiftsData[date] || {})
+        .filter(s => statsVendor === "all" || s.vendedor === statsVendor).sort((a,b) => a.start - b.start);
+      let horario;
+      if(shifts.length){
+        horario = shifts.map(s => fmtClock(s.start) + "–" + (s.end ? fmtClock(s.end) : "abierto")).join(", ");
+      } else if(daySlots.length){
+        const hs = daySlots.map(sl => sl.h);
+        horario = `${pad2(Math.min(...hs))}–${pad2(Math.max(...hs) + 1)} h (sin turno marcado)`;
+      } else horario = "—";
+      const ws = daySlots.filter(sl => sl.w);
+      const temps = ws.map(sl => sl.w.t);
+      const amt = items.reduce((s,x) => s + x.e.price, 0);
+      const p = payTotals(items.map(x => x.e));
+      const top = topProducts(items, 1)[0];
+      const vendors = [...new Set(items.map(x => x.e.vendedor).filter(Boolean))].join(", ");
+      return { date, weekday: weekdayOf(date), vendors: vendors || "—", horario, hoursPresent: daySlots.length,
+        weather: mostCommon(ws.map(sl => weatherGroup(sl.w.c).label)) || "—",
+        tMin: temps.length ? Math.min(...temps) : null, tMax: temps.length ? Math.max(...temps) : null,
+        count: items.length, amount: amt, cash: p.cash, transfer: p.tr,
+        rateC: daySlots.length ? items.length / daySlots.length : 0,
+        top: top ? `${top[0]} (${top[1]})` : "—" };
+    }).filter(d => d.count > 0 || d.hoursPresent > 0);
+
+    // Por clima y por temperatura (ventas por hora presente con esa condición)
+    const groupBy = (keyFn) => {
+      const g = {};
+      const get = k => g[k.k] || (g[k.k] = { label: k.label, present: 0, count: 0, amount: 0, items: [] });
+      slots.forEach(sl => { const k = sl.w && keyFn(sl.w); if(k) get(k).present++; });
+      all.forEach(x => { const k = x.w && keyFn(x.w); if(k){ const gg = get(k); gg.count++; gg.amount += x.e.price; gg.items.push(x); } });
+      return Object.values(g).filter(x => x.present > 0).map(x => {
+        const top = topProducts(x.items, 1)[0];
+        const bestH = mostCommon(x.items.map(i => i.h));
+        return { ...x, rateC: x.count / x.present, rateA: x.amount / x.present,
+          top: top ? `${top[0]} (${top[1]})` : "—", bestHour: bestH != null ? hourRange(Number(bestH)) : "—" };
+      }).sort((a,b) => b.rateC - a.rateC);
+    };
+    const weather = groupBy(w => weatherGroup(w.c));
+    const temps = groupBy(w => tempBand(w.t));
+    const totalPresent = slots.length;
+    const avgRate = totalPresent ? all.length / totalPresent : 0;
+
+    // Por producto
+    const prodMap = {};
+    all.forEach(x => {
+      const p = prodMap[x.e.name] || (prodMap[x.e.name] = { name: x.e.name, count: 0, amount: 0, cash: 0, transfer: 0, hours: [], weathers: [] });
+      p.count++; p.amount += x.e.price;
+      if(x.e.pay === "efectivo") p.cash++; else if(x.e.pay === "transferencia") p.transfer++;
+      p.hours.push(x.h);
+      if(x.w) p.weathers.push(weatherGroup(x.w.c).label);
     });
-    const wsHour = XLSX.utils.aoa_to_sheet(hourRows);
-    wsHour["!cols"] = [{wch:16}, {wch:10}, {wch:12}, {wch:30}];
+    const products = Object.values(prodMap).sort((a,b) => b.count - a.count).map(p => ({ ...p,
+      share: amount ? p.amount / amount : 0,
+      bestHour: p.hours.length ? hourRange(Number(mostCommon(p.hours))) : "—",
+      weather: mostCommon(p.weathers) || "—" }));
 
-    // Hoja con cada venta, su hora y el clima
-    const detailRows = [["Fecha", "Hora", "Vendedor", "Producto", "Precio", "Pago", "Temperatura °C", "Clima"]];
-    allDates.forEach(date => (salesData[date]||[]).forEach(e => {
-      const h = hourOf(e);
-      const w = h == null ? null : weatherOf(date, e, h);
-      const g = w ? weatherGroup(w.c) : null;
-      detailRows.push([date, e.time || "", e.vendedor || "", e.name, e.price, PAY_LABEL[e.pay] || "", w ? w.t : "", g ? g.label : ""]);
-    }));
-    const wsDetail = XLSX.utils.aoa_to_sheet(detailRows);
-    wsDetail["!cols"] = [{wch:12}, {wch:8}, {wch:18}, {wch:24}, {wch:10}, {wch:14}, {wch:15}, {wch:12}];
+    return { all, slots, slotW, amount, dates, pay, hours, block, days, weather, temps, avgRate, products };
+  }
 
-    // Hoja de turnos
-    const shiftRows = [["Fecha", "Vendedor", "Inicio", "Fin", "Horas"]];
-    Object.keys(shiftsData).sort().forEach(date => Object.values(shiftsData[date]).sort((a,b)=>a.start-b.start).forEach(s => {
-      shiftRows.push([date, s.vendedor || "", fmtClock(s.start), s.end ? fmtClock(s.end) : "sin cerrar",
-        s.end ? Math.round((s.end - s.start) / 360000) / 10 : ""]);
-    }));
-    const wsShifts = XLSX.utils.aoa_to_sheet(shiftRows);
-    wsShifts["!cols"] = [{wch:12}, {wch:18}, {wch:8}, {wch:10}, {wch:8}];
+  function buildConclusions(r){
+    const out = [];
+    const tested = r.hours.filter(h => h.present > 0);
+    if(r.block){
+      out.push(`El mejor horario para ir (${SHIFT_HOURS} horas seguidas) es de ${pad2(r.block.s)}:00 a ${pad2((r.block.s + SHIFT_HOURS) % 24)}:00: ` +
+        `en promedio ${Math.round(r.block.c)} ventas y ${money(r.block.a)} por turno` +
+        (r.block.minDays < 3 ? ` (todavía con pocos datos: cada hora se probó al menos ${plural(r.block.minDays, "vez", "veces")}).` : "."));
+    } else if(tested.length){
+      out.push(`Todavía no hay ${SHIFT_HOURS} horas seguidas probadas para recomendar un horario: conviene seguir probando turnos en horarios distintos.`);
+    }
+    if(tested.length >= 2){
+      const best = tested.reduce((a,b) => b.rateC > a.rateC ? b : a);
+      const worst = tested.reduce((a,b) => b.rateC < a.rateC ? b : a);
+      out.push(`La hora que más vende es de ${hourRange(best.h)} (${fmtNum1(best.rateC)} ventas por hora en promedio) y la que menos, de ${hourRange(worst.h)} (${fmtNum1(worst.rateC)}).`);
+    }
+    if(r.weather.length >= 2){
+      const b = r.weather[0], w = r.weather[r.weather.length - 1];
+      const pct = w.rateC ? Math.round((b.rateC / w.rateC - 1) * 100) : null;
+      out.push(`Con ${WEATHER_PHRASE[b.label] || b.label} se vendieron ${fmtNum1(b.rateC)} ventas por hora` +
+        (pct != null ? `, un ${pct}% más que con ${WEATHER_PHRASE[w.label] || w.label} (${fmtNum1(w.rateC)}).` : "."));
+    } else if(r.weather.length === 1){
+      out.push(`Todas las horas trabajadas fueron con ${WEATHER_PHRASE[r.weather[0].label] || r.weather[0].label}: todavía no se puede comparar el efecto del clima.`);
+    }
+    if(r.temps.length >= 2){
+      out.push(`La temperatura que mejor vende es "${r.temps[0].label}" con ${fmtNum1(r.temps[0].rateC)} ventas por hora; la peor, "${r.temps[r.temps.length-1].label}" con ${fmtNum1(r.temps[r.temps.length-1].rateC)}.`);
+    }
+    if(r.products.length){
+      const p = r.products[0];
+      out.push(`El producto más vendido es ${p.name}: ${p.count} unidades (${Math.round(p.share * 100)}% de la plata), sobre todo de ${p.bestHour}.`);
+    }
+    const daysWithSales = r.days.filter(d => d.count > 0);
+    if(daysWithSales.length >= 2){
+      const bd = daysWithSales.reduce((a,b) => b.amount > a.amount ? b : a);
+      const wd = daysWithSales.reduce((a,b) => b.amount < a.amount ? b : a);
+      out.push(`El mejor día fue el ${bd.weekday} ${bd.date} con ${money(bd.amount)} (${bd.weather.toLowerCase()}); el más flojo, el ${wd.weekday} ${wd.date} con ${money(wd.amount)} (${wd.weather.toLowerCase()}).`);
+    }
+    const paid = r.pay.cash + r.pay.tr;
+    if(paid){
+      out.push(`Forma de pago: ${money(r.pay.cash)} en efectivo (${Math.round(r.pay.cash / paid * 100)}%) y ${money(r.pay.tr)} por transferencia (${Math.round(r.pay.tr / paid * 100)}%).`);
+    }
+    return out;
+  }
 
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Ventas");
-    XLSX.utils.book_append_sheet(wb, wsHour, "Por hora");
-    XLSX.utils.book_append_sheet(wb, wsDetail, "Detalle y clima");
-    XLSX.utils.book_append_sheet(wb, wsShifts, "Turnos");
-    XLSX.writeFile(wb, `ventas_shell_mdz_${todayStr()}.xlsx`);
+  // Gráfico en un canvas fuera de pantalla, devuelto como PNG para meterlo en el Excel.
+  function chartImage(config, width, height){
+    const canvas = document.createElement("canvas");
+    canvas.width = width; canvas.height = height;
+    const whiteBg = { id: "whiteBg", beforeDraw: (c) => {
+      const ctx = c.ctx; ctx.save(); ctx.fillStyle = "#FFFFFF"; ctx.fillRect(0, 0, c.width, c.height); ctx.restore();
+    } };
+    const chart = new Chart(canvas.getContext("2d"), {
+      ...config,
+      options: { responsive: false, animation: false, devicePixelRatio: 2,
+        plugins: { legend: { display: config.type === "doughnut" }, title: { display: true, text: config.title, font: { size: 16, weight: "bold" }, color: "#0F2027" } },
+        scales: config.type === "doughnut" ? {} : { y: { beginAtZero: true, ticks: { color: "#33474F" } }, x: { ticks: { color: "#33474F" } } },
+        ...(config.options || {}) },
+      plugins: [whiteBg]
+    });
+    const url = canvas.toDataURL("image/png");
+    chart.destroy();
+    return url;
+  }
+
+  function sheetTitle(ws, title, subtitle, ncols){
+    ws.mergeCells(1, 1, 1, Math.max(ncols, 2));
+    const t = ws.getCell(1, 1);
+    t.value = title;
+    t.font = { bold: true, size: 16, color: { argb: XL.white } };
+    t.fill = { type: "pattern", pattern: "solid", fgColor: { argb: XL.dark } };
+    t.alignment = { vertical: "middle" };
+    ws.getRow(1).height = 28;
+    ws.mergeCells(2, 1, 2, Math.max(ncols, 2));
+    const s = ws.getCell(2, 1);
+    s.value = subtitle;
+    s.font = { italic: true, color: { argb: XL.dim } };
+  }
+
+  // Tabla con encabezado oscuro, filas alternadas, formato por columna y filtro.
+  function addTable(ws, startRow, columns, rows, opts = {}){
+    const header = ws.getRow(startRow);
+    columns.forEach((c, i) => {
+      const cell = header.getCell(i + 1);
+      cell.value = c.header;
+      cell.font = { bold: true, color: { argb: XL.white } };
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: XL.dark } };
+      cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+      cell.border = { bottom: { style: "medium", color: { argb: XL.amber } } };
+      if(c.width && !opts.keepWidths) ws.getColumn(i + 1).width = c.width;
+    });
+    header.height = 32;
+    rows.forEach((r, ri) => {
+      const row = ws.getRow(startRow + 1 + ri);
+      columns.forEach((c, i) => {
+        const cell = row.getCell(i + 1);
+        cell.value = r[i] === undefined ? "" : r[i];
+        if(c.fmt) cell.numFmt = c.fmt;
+        cell.alignment = { vertical: "middle", wrapText: !!c.wrap, horizontal: c.align || (typeof r[i] === "number" ? "right" : "left") };
+        cell.border = { bottom: { style: "thin", color: { argb: XL.border } } };
+        if(ri % 2 === 1) cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: XL.zebra } };
+      });
+    });
+    let end = startRow + rows.length;
+    if(opts.total){
+      const row = ws.getRow(end + 1);
+      columns.forEach((c, i) => {
+        const cell = row.getCell(i + 1);
+        cell.value = opts.total[i] === undefined ? "" : opts.total[i];
+        if(c.fmt) cell.numFmt = c.fmt;
+        cell.font = { bold: true };
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: XL.amberSoft } };
+        cell.border = { top: { style: "thin", color: { argb: XL.amber } } };
+        cell.alignment = { horizontal: typeof opts.total[i] === "number" ? "right" : "left" };
+      });
+      end++;
+    }
+    if(opts.filter !== false && rows.length) ws.autoFilter = { from: { row: startRow, column: 1 }, to: { row: startRow + rows.length, column: columns.length } };
+    return end + 2;
+  }
+
+  function sectionLabel(ws, row, text, ncols){
+    ws.mergeCells(row, 1, row, Math.max(ncols, 2));
+    const c = ws.getCell(row, 1);
+    c.value = text;
+    c.font = { bold: true, size: 12, color: { argb: XL.dark } };
+    c.border = { bottom: { style: "thin", color: { argb: XL.amber } } };
+    return row + 1;
+  }
+
+  window.exportExcel = async function(){
+    const btn = document.getElementById("excelBtn");
+    const label = btn.textContent;
+    btn.disabled = true; btn.textContent = "Armando el Excel…";
+    try {
+      await Promise.all([loadScript(EXCELJS_URL), loadScript(CHARTJS_URL), loadHourlyWeather()]);
+      const r = buildReport();
+      if(!r.all.length){ showError("No hay ventas en el período elegido."); return; }
+
+      const rangeLabel = { hoy: "Hoy", "7": "Últimos 7 días", "30": "Últimos 30 días", all: "Toda la temporada" }[statsRange];
+      const vendorLabel = statsVendor === "all" ? "todos los vendedores" : statsVendor;
+      const periodo = `${rangeLabel} (${r.dates[0]} al ${r.dates[r.dates.length - 1]}) · ${vendorLabel} · clima de ${SHELL_LOCATION.name}`;
+      const generado = `Generado el ${new Date().toLocaleString("es-AR")} por ${me.name}`;
+      const conclusions = buildConclusions(r);
+
+      const wb = new ExcelJS.Workbook();
+      wb.creator = "Ventas Shell MDZ";
+      wb.created = new Date();
+
+      // ----- Gráficos -----
+      const tested = r.hours.filter(h => h.present > 0);
+      const bestH = tested.length ? tested.reduce((a,b) => b.rateC > a.rateC ? b : a).h : null;
+      const imgHours = wb.addImage({ extension: "png", base64: chartImage({
+        type: "bar", title: "Ventas promedio por cada hora que se estuvo",
+        data: { labels: r.hours.map(h => pad2(h.h) + " h"),
+          datasets: [{ data: r.hours.map(h => Number(h.rateC.toFixed(2))),
+            backgroundColor: r.hours.map(h => !h.present ? "#D5DEE2" : h.h === bestH ? "#4FB477"
+              : (r.block && h.h >= r.block.s && h.h < r.block.s + SHIFT_HOURS ? "#8FD3A8" : "#F5B400")) }] }
+      }, 760, 340) });
+      const daysSold = r.days.filter(d => d.count > 0);
+      const imgDays = wb.addImage({ extension: "png", base64: chartImage({
+        type: "bar", title: "Plata vendida por día (efectivo y transferencia)",
+        data: { labels: daysSold.map(d => d.date.slice(5) + " " + d.weekday.slice(0,3)),
+          datasets: [
+            { label: "Efectivo", data: daysSold.map(d => d.cash), backgroundColor: "#4FB477", stack: "p" },
+            { label: "Transferencia", data: daysSold.map(d => d.transfer), backgroundColor: "#4AA3DF", stack: "p" },
+            { label: "Sin dato", data: daysSold.map(d => d.amount - d.cash - d.transfer), backgroundColor: "#C9D3D7", stack: "p" }
+          ] },
+        options: { plugins: { legend: { display: true }, title: { display: true, text: "Plata vendida por día (efectivo y transferencia)", font: { size: 16, weight: "bold" }, color: "#0F2027" } },
+          scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } }
+      }, 760, 340) });
+      const imgWeather = r.weather.length ? wb.addImage({ extension: "png", base64: chartImage({
+        type: "bar", title: "Ventas por hora según el clima",
+        data: { labels: r.weather.map(w => w.label),
+          datasets: [{ data: r.weather.map(w => Number(w.rateC.toFixed(2))), backgroundColor: r.weather.map(w => WEATHER_COLOR[w.label] || "#F5B400") }] }
+      }, 560, 320) }) : null;
+      const imgTemp = r.temps.length ? wb.addImage({ extension: "png", base64: chartImage({
+        type: "bar", title: "Ventas por hora según la temperatura",
+        data: { labels: r.temps.map(t => t.label),
+          datasets: [{ data: r.temps.map(t => Number(t.rateC.toFixed(2))), backgroundColor: "#F5B400" }] }
+      }, 560, 320) }) : null;
+      const imgPay = (r.pay.cash + r.pay.tr) ? wb.addImage({ extension: "png", base64: chartImage({
+        type: "doughnut", title: "Efectivo vs. transferencia",
+        data: { labels: ["Efectivo", "Transferencia"], datasets: [{ data: [r.pay.cash, r.pay.tr], backgroundColor: ["#4FB477", "#4AA3DF"] }] }
+      }, 420, 320) }) : null;
+      const topProds = r.products.slice(0, 10);
+      const imgProd = wb.addImage({ extension: "png", base64: chartImage({
+        type: "bar", title: "Unidades vendidas por producto",
+        data: { labels: topProds.map(p => p.name), datasets: [{ data: topProds.map(p => p.count), backgroundColor: "#F5B400" }] },
+        options: { indexAxis: "y", plugins: { legend: { display: false }, title: { display: true, text: "Unidades vendidas por producto", font: { size: 16, weight: "bold" }, color: "#0F2027" } } }
+      }, 560, Math.max(260, 60 + topProds.length * 30)) });
+
+      // ----- Resumen -----
+      const wsR = wb.addWorksheet("Resumen", { views: [{ showGridLines: false }] });
+      sheetTitle(wsR, "Ventas Shell MDZ · Reporte de ventas", periodo + " · " + generado, 14);
+      wsR.getColumn(1).width = 38; wsR.getColumn(2).width = 22;
+      let row = sectionLabel(wsR, 4, "Números principales", 2);
+      const daysCount = r.days.filter(d => d.count > 0).length;
+      const kpis = [
+        ["Ventas (unidades)", r.all.length, null],
+        ["Total vendido", r.amount, FMT_MONEY],
+        ["Efectivo", r.pay.cash, FMT_MONEY],
+        ["Transferencia", r.pay.tr, FMT_MONEY],
+        ["Días con ventas", daysCount, null],
+        ["Promedio por día", daysCount ? r.amount / daysCount : 0, FMT_MONEY],
+        ["Horas trabajadas", r.slots.length, null],
+        ["Ventas por hora trabajada", r.avgRate, FMT_DEC],
+        ["Plata por hora trabajada", r.slots.length ? r.amount / r.slots.length : 0, FMT_MONEY],
+        ["Mejor horario (4 h)", r.block ? `${pad2(r.block.s)}:00 a ${pad2((r.block.s + SHIFT_HOURS) % 24)}:00` : "Faltan datos", null],
+        ["Mejor clima para vender", r.weather[0] ? r.weather[0].label : "Faltan datos", null],
+        ["Producto más vendido", r.products[0] ? r.products[0].name : "—", null]
+      ];
+      kpis.forEach(([k, v, fmt], i) => {
+        const rr = wsR.getRow(row + i);
+        rr.getCell(1).value = k;
+        rr.getCell(1).font = { color: { argb: XL.dim } };
+        const c = rr.getCell(2);
+        c.value = v; if(fmt) c.numFmt = fmt;
+        c.font = { bold: true, size: 12 };
+        c.alignment = { horizontal: "right" };
+        [1, 2].forEach(n => rr.getCell(n).border = { bottom: { style: "thin", color: { argb: XL.border } } });
+      });
+      row += kpis.length + 1;
+      row = sectionLabel(wsR, row, "Conclusiones", 2);
+      conclusions.forEach(text => {
+        wsR.mergeCells(row, 1, row, 2);
+        const c = wsR.getCell(row, 1);
+        c.value = "• " + text;
+        c.alignment = { wrapText: true, vertical: "top" };
+        wsR.getRow(row).height = Math.max(32, Math.ceil(text.length / 55) * 16);
+        row++;
+      });
+      row++;
+      wsR.mergeCells(row, 1, row, 2);
+      wsR.getCell(row, 1).value = "Cómo leerlo: \"por hora trabajada\" divide las ventas por las horas en que había alguien vendiendo (turnos marcados). Así una hora en la que no se fue no cuenta como mala.";
+      wsR.getCell(row, 1).alignment = { wrapText: true, vertical: "top" };
+      wsR.getCell(row, 1).font = { italic: true, size: 9, color: { argb: XL.dim } };
+      wsR.getRow(row).height = 44;
+      // Gráficos a la derecha
+      wsR.addImage(imgHours, { tl: { col: 3, row: 3 }, ext: { width: 760, height: 340 } });
+      wsR.addImage(imgDays, { tl: { col: 3, row: 21 }, ext: { width: 760, height: 340 } });
+      if(imgWeather) wsR.addImage(imgWeather, { tl: { col: 3, row: 39 }, ext: { width: 560, height: 320 } });
+      if(imgPay) wsR.addImage(imgPay, { tl: { col: 11, row: 39 }, ext: { width: 420, height: 320 } });
+
+      // ----- Por día -----
+      const wsD = wb.addWorksheet("Por día", { views: [{ state: "frozen", ySplit: 4 }] });
+      sheetTitle(wsD, "Cómo se vendió cada día", periodo, 15);
+      const dayCols = [
+        { header: "Fecha", width: 12 }, { header: "Día", width: 11 }, { header: "Vendedor/es", width: 22, wrap: true },
+        { header: "Horario trabajado", width: 24, wrap: true }, { header: "Horas", width: 8 },
+        { header: "Clima", width: 12 }, { header: "Temp. mín °C", width: 9, fmt: FMT_DEC }, { header: "Temp. máx °C", width: 9, fmt: FMT_DEC },
+        { header: "Ventas", width: 9 }, { header: "Total $", width: 12, fmt: FMT_MONEY },
+        { header: "Efectivo $", width: 12, fmt: FMT_MONEY }, { header: "Transferencia $", width: 14, fmt: FMT_MONEY },
+        { header: "Ventas por hora", width: 10, fmt: FMT_DEC }, { header: "$ por hora", width: 12, fmt: FMT_MONEY },
+        { header: "Producto más vendido", width: 24, wrap: true }
+      ];
+      let next = addTable(wsD, 4, dayCols, r.days.map(d => [d.date, d.weekday, d.vendors, d.horario, d.hoursPresent, d.weather,
+        d.tMin ?? "", d.tMax ?? "", d.count, d.amount, d.cash, d.transfer, d.rateC,
+        d.hoursPresent ? d.amount / d.hoursPresent : 0, d.top]),
+        { total: ["TOTAL", "", "", "", r.slots.length, "", "", "", r.all.length, r.amount, r.pay.cash, r.pay.tr, r.avgRate,
+          r.slots.length ? r.amount / r.slots.length : 0, ""] });
+      wsD.addImage(imgDays, { tl: { col: 0, row: next }, ext: { width: 760, height: 340 } });
+
+      // ----- Por hora -----
+      const wsH = wb.addWorksheet("Por hora", { views: [{ state: "frozen", ySplit: 4 }] });
+      sheetTitle(wsH, "Qué pasa en cada hora", periodo + " · \"Veces probada\" = cuántos días se estuvo en esa hora", 9);
+      next = addTable(wsH, 4, [
+        { header: "Hora", width: 14 }, { header: "Veces probada", width: 10 }, { header: "Ventas", width: 9 },
+        { header: "Total $", width: 12, fmt: FMT_MONEY }, { header: "Ventas por hora", width: 10, fmt: FMT_DEC },
+        { header: "$ por hora", width: 12, fmt: FMT_MONEY }, { header: "En el mejor horario", width: 11, align: "center" },
+        { header: "Clima más común", width: 14 }, { header: "Producto más vendido", width: 26, wrap: true }
+      ], r.hours.map(h => [hourRange(h.h), h.present, h.count, h.amount, h.rateC, h.rateA,
+        r.block && h.h >= r.block.s && h.h < r.block.s + SHIFT_HOURS ? "Sí" : "", h.weather, h.top]));
+      wsH.addImage(imgHours, { tl: { col: 0, row: next }, ext: { width: 760, height: 340 } });
+
+      // ----- Por clima -----
+      const wsC = wb.addWorksheet("Clima", { views: [{ showGridLines: false }] });
+      sheetTitle(wsC, "Cómo afecta el clima a las ventas", periodo + " · comparado contra el promedio general de " + fmtNum1(r.avgRate) + " ventas por hora", 8);
+      const climateCols = (first) => [
+        { header: first, width: 22 }, { header: "Horas trabajadas", width: 11 }, { header: "Ventas", width: 9 },
+        { header: "Total $", width: 12, fmt: FMT_MONEY }, { header: "Ventas por hora", width: 10, fmt: FMT_DEC },
+        { header: "$ por hora", width: 12, fmt: FMT_MONEY }, { header: "vs. promedio", width: 11, fmt: '+0%;-0%;0%' },
+        { header: "Hora con más ventas", width: 16 }, { header: "Producto más vendido", width: 26, wrap: true }
+      ];
+      const climateRow = g => [g.label, g.present, g.count, g.amount, g.rateC, g.rateA,
+        r.avgRate ? g.rateC / r.avgRate - 1 : 0, g.bestHour, g.top];
+      next = sectionLabel(wsC, 4, "Según el estado del tiempo", 9);
+      next = addTable(wsC, next, climateCols("Clima"), r.weather.map(climateRow), { filter: false });
+      next = sectionLabel(wsC, next, "Según la temperatura", 9);
+      next = addTable(wsC, next, climateCols("Temperatura"), r.temps.map(climateRow), { filter: false, keepWidths: true });
+      if(imgWeather) wsC.addImage(imgWeather, { tl: { col: 0, row: next }, ext: { width: 560, height: 320 } });
+      if(imgTemp) wsC.addImage(imgTemp, { tl: { col: 5, row: next }, ext: { width: 560, height: 320 } });
+
+      // ----- Por producto -----
+      const wsP = wb.addWorksheet("Productos", { views: [{ state: "frozen", ySplit: 4 }] });
+      sheetTitle(wsP, "Qué se vendió", periodo, 8);
+      next = addTable(wsP, 4, [
+        { header: "Producto", width: 26 }, { header: "Unidades", width: 10 }, { header: "Total $", width: 12, fmt: FMT_MONEY },
+        { header: "% de la plata", width: 10, fmt: FMT_PCT }, { header: "En efectivo", width: 10 }, { header: "Por transferencia", width: 13 },
+        { header: "Hora en que más sale", width: 16 }, { header: "Clima en que más sale", width: 16 }
+      ], r.products.map(p => [p.name, p.count, p.amount, p.share, p.cash, p.transfer, p.bestHour, p.weather]),
+        { total: ["TOTAL", r.all.length, r.amount, 1, r.products.reduce((s,p) => s + p.cash, 0), r.products.reduce((s,p) => s + p.transfer, 0), "", ""] });
+      wsP.addImage(imgProd, { tl: { col: 0, row: next }, ext: { width: 560, height: Math.max(260, 60 + topProds.length * 30) } });
+
+      // ----- Detalle de cada venta -----
+      const wsV = wb.addWorksheet("Cada venta", { views: [{ state: "frozen", ySplit: 4 }] });
+      sheetTitle(wsV, "Detalle de cada venta", periodo, 10);
+      const sorted = [...r.all].sort((a,b) => (a.date + (a.e.time || "")).localeCompare(b.date + (b.e.time || "")));
+      addTable(wsV, 4, [
+        { header: "Fecha", width: 12 }, { header: "Día", width: 11 }, { header: "Hora", width: 8 }, { header: "Vendedor", width: 18 },
+        { header: "Producto", width: 24 }, { header: "Precio", width: 11, fmt: FMT_MONEY }, { header: "Pago", width: 14 },
+        { header: "Temp. °C", width: 9, fmt: FMT_DEC }, { header: "Clima", width: 12 }, { header: "Lluvia mm", width: 9, fmt: FMT_DEC }
+      ], sorted.map(x => {
+        const g = x.w ? weatherGroup(x.w.c) : null;
+        return [x.date, weekdayOf(x.date), x.e.time || pad2(x.h) + ":00", x.e.vendedor || "", x.e.name, x.e.price,
+          PAY_LABEL[x.e.pay] || "Sin dato", x.w ? x.w.t : "", g ? g.label : "", x.w && x.w.p != null ? x.w.p : ""];
+      }));
+
+      // ----- Turnos -----
+      const wsT = wb.addWorksheet("Turnos", { views: [{ state: "frozen", ySplit: 4 }] });
+      sheetTitle(wsT, "Turnos marcados", periodo, 6);
+      const from = rangeFrom();
+      const shiftRows = [];
+      Object.keys(shiftsData).sort().forEach(date => {
+        if(from && date < from) return;
+        Object.values(shiftsData[date]).filter(s => statsVendor === "all" || s.vendedor === statsVendor)
+          .sort((a,b) => a.start - b.start).forEach(s => {
+            // Ventas viejas sin hora exacta: se comparan por la hora y minutos que quedaron anotados.
+            const minOfDay = ts => { const d = new Date(ts); return d.getHours() * 60 + d.getMinutes(); };
+            const saleMin = x => x.e.ts ? minOfDay(x.e.ts) : (parseInt(x.e.time, 10) * 60 + (parseInt(String(x.e.time).slice(3), 10) || 0));
+            const sMin = minOfDay(s.start), eMin = s.end ? minOfDay(s.end) : 24 * 60;
+            const sales = r.all.filter(x => x.date === date && saleMin(x) >= sMin && saleMin(x) <= eMin);
+            shiftRows.push([date, weekdayOf(date), s.vendedor || "", fmtClock(s.start), s.end ? fmtClock(s.end) : "sin cerrar",
+              s.end ? Math.round((s.end - s.start) / 360000) / 10 : "", sales.length, sales.reduce((t,x) => t + x.e.price, 0)]);
+          });
+      });
+      addTable(wsT, 4, [
+        { header: "Fecha", width: 12 }, { header: "Día", width: 11 }, { header: "Vendedor", width: 18 }, { header: "Inicio", width: 8 },
+        { header: "Fin", width: 10 }, { header: "Horas", width: 8, fmt: FMT_DEC }, { header: "Ventas en el turno", width: 11 },
+        { header: "$ en el turno", width: 13, fmt: FMT_MONEY }
+      ], shiftRows.length ? shiftRows : [["Todavía no hay turnos marcados en este período.", "", "", "", "", "", "", ""]]);
+
+      const buf = await wb.xlsx.writeBuffer();
+      const blob = new Blob([buf], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `reporte_ventas_shell_${statsRange === "all" ? "temporada" : statsRange === "hoy" ? todayStr() : "ultimos_" + statsRange + "_dias"}.xlsx`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } catch(e){
+      console.error(e);
+      showError("No se pudo armar el Excel. Revisá tu conexión y probá de nuevo.");
+    } finally {
+      btn.disabled = false; btn.textContent = label;
+    }
   };
 
   // ---------- Backup manual ----------
