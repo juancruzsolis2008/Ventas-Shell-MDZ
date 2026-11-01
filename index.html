@@ -19,6 +19,7 @@
     --text:#F6F1E4; --text-dim:#9FB6BE; --border:#2E4E5C;
   }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  [hidden]{ display:none !important; }
   html,body{ margin:0; padding:0; background:var(--bg); color:var(--text);
     font-family:'Inter',sans-serif; height:100%; overscroll-behavior:none; }
   body{ display:flex; justify-content:center; }
@@ -33,15 +34,23 @@
   .flash{ animation: flashAnim .35s ease; }
   @keyframes flashAnim{ 0%{ filter:brightness(1.6);} 100%{ filter:brightness(1);} }
 
-  header{ padding:16px 16px 8px; border-bottom:1px solid var(--border); }
+  header{ padding:16px 16px 10px; border-bottom:1px solid var(--border); }
   header .title{ font-size:24px; font-weight:700; text-transform:uppercase; }
+  .hdr-row{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .hdr-meta{ display:flex; gap:6px; flex-wrap:wrap; margin-top:8px; }
+  .pill{ background:var(--bg-elev); border:1px solid var(--border); border-radius:999px;
+    padding:4px 10px; font-size:12px; color:var(--text-dim); display:inline-flex; align-items:center; gap:5px; }
+  .pill b{ color:var(--text); font-weight:600; }
+  .pill.role{ color:var(--amber); border-color:rgba(245,180,0,.4); }
+  .icon-btn{ background:var(--bg-elev); border:1px solid var(--border); color:var(--text-dim);
+    border-radius:10px; width:38px; height:38px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
 
   #error{ display:none; margin:10px 16px 0; background:rgba(232,93,61,.15);
     border:1px solid var(--red); border-radius:12px; padding:8px 12px; font-size:13px; }
 
   main{ flex:1; overflow-y:auto; padding:14px 16px 90px; }
 
-  input[type=date], input[type=text], input[type=number], input[type=email], input[type=password]{
+  input[type=date], input[type=text], input[type=number], input[type=email], input[type=password], select{
     background:#0F232B; border:1px solid var(--border); color:var(--text);
     border-radius:12px; padding:10px 12px; font-size:14px; width:100%;
     font-family:'Inter',sans-serif;
@@ -73,7 +82,7 @@
     padding:10px 18px; font-weight:700; font-size:14px; }
 
   .row-card{ background:var(--bg-elev); border:1px solid var(--border); border-radius:12px;
-    padding:10px 12px; display:flex; align-items:center; justify-content:space-between; }
+    padding:10px 12px; display:flex; align-items:center; justify-content:space-between; gap:8px; }
   .row-card + .row-card{ margin-top:8px; }
 
   .undo-btn{ position:fixed; bottom:78px; right:calc(50% - 240px + 16px); background:var(--red);
@@ -92,28 +101,63 @@
 
   .field-card{ background:var(--bg-elev); border:1px solid var(--border); border-radius:14px;
     padding:12px; margin-bottom:20px; display:flex; flex-direction:column; gap:8px; }
+  .hint{ font-size:12px; color:var(--text-dim); line-height:1.4; }
 
   .tab{ display:none; }
   .tab.active{ display:block; }
 
-  .vendor-row{ display:flex; gap:8px; margin-bottom:14px; }
-  .vendor-btn{ flex:1; background:var(--bg-elev); border:1px solid var(--border); color:var(--text-dim);
-    border-radius:12px; padding:10px 6px; font-size:13px; font-weight:600; text-align:center; }
-  .vendor-btn.active{ background:var(--amber); color:#1A1200; border-color:var(--amber); }
-
-  .chip-row{ display:flex; gap:8px; margin-bottom:14px; }
-  .chip{ flex:1; background:var(--bg-elev); border:1px solid var(--border); border-radius:10px;
+  .chip-row{ display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+  .chip{ flex:1; min-width:120px; background:var(--bg-elev); border:1px solid var(--border); border-radius:10px;
     padding:8px 10px; }
   .chip .n{ font-size:11px; color:var(--text-dim); }
   .chip .v{ font-size:15px; font-weight:700; color:var(--amber); }
+  .chip.good .v{ color:var(--green); }
+  .chip.bad .v{ color:var(--red); }
+
+  .seg{ display:flex; gap:6px; margin-bottom:10px; }
+  .seg button{ flex:1; background:var(--bg-elev); border:1px solid var(--border); color:var(--text-dim);
+    border-radius:10px; padding:8px 4px; font-size:12px; font-weight:600; font-family:inherit; }
+  .seg button.active{ background:var(--amber); color:#1A1200; border-color:var(--amber); }
+
+  .section-title{ margin:18px 0 8px; }
+  .chart-wrap{ background:var(--bg-elev); border:1px solid var(--border); border-radius:14px;
+    padding:12px 8px 8px; overflow-x:auto; }
+  .bars{ display:flex; align-items:flex-end; gap:4px; height:150px; min-width:100%; }
+  .bar-col{ flex:1; min-width:22px; display:flex; flex-direction:column; align-items:center; justify-content:flex-end; height:100%; }
+  .bar-col .val{ font-size:10px; color:var(--text-dim); margin-bottom:3px; white-space:nowrap; }
+  .bar-col .bar{ width:100%; max-width:26px; background:var(--bg-elev2); border-radius:6px 6px 2px 2px; min-height:2px; }
+  .bar-col.best .bar{ background:var(--green); }
+  .bar-col.worst .bar{ background:var(--red); }
+  .bar-col.mid .bar{ background:var(--amber); opacity:.75; }
+  .bar-col .hr{ font-size:10px; color:var(--text-dim); margin-top:4px; }
+
+  .stat-row{ background:var(--bg-elev); border:1px solid var(--border); border-radius:12px; padding:10px 12px; }
+  .stat-row + .stat-row{ margin-top:8px; }
+  .stat-row .top{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .stat-row .lbl{ font-size:14px; font-weight:600; }
+  .stat-row .num{ font-size:13px; color:var(--amber); font-weight:700; white-space:nowrap; }
+  .stat-row .det{ font-size:12px; color:var(--text-dim); margin-top:3px; line-height:1.4; }
+  .meter{ height:5px; background:#0F232B; border-radius:999px; margin-top:6px; overflow:hidden; }
+  .meter > div{ height:100%; background:var(--amber); border-radius:999px; }
+
+  .acc-row{ background:var(--bg-elev); border:1px solid var(--border); border-radius:12px; padding:10px 12px;
+    display:flex; flex-direction:column; gap:8px; }
+  .acc-row + .acc-row{ margin-top:8px; }
+  .acc-row .email{ font-size:12px; color:var(--text-dim); word-break:break-all; }
+  .acc-row .ctrls{ display:flex; gap:8px; align-items:center; }
+  .acc-row .ctrls select{ flex:1; padding:8px 10px; }
 
   #authScreen{ align-items:center; justify-content:center; padding:24px; }
   #authScreen .box{ width:100%; max-width:340px; }
   #authScreen .title{ font-size:28px; font-weight:700; text-transform:uppercase; text-align:center; margin-bottom:4px; }
   #authScreen .eyebrow{ text-align:center; margin-bottom:24px; }
-  #authScreen input{ margin-bottom:10px; }
-  #authError{ display:none; color:var(--red); font-size:13px; margin-top:8px; text-align:center; }
-  #authLoading{ display:none; text-align:center; color:var(--text-dim); font-size:13px; }
+  .google-btn{ width:100%; display:flex; align-items:center; justify-content:center; gap:10px;
+    background:#fff; color:#1f1f1f; border:none; border-radius:12px; padding:12px 0; font-weight:600;
+    font-size:14px; font-family:inherit; }
+  #authError{ display:none; color:var(--red); font-size:13px; margin-top:10px; text-align:center; }
+  #authLoading{ display:none; text-align:center; color:var(--text-dim); font-size:13px; margin-top:10px; }
+  #noAccess{ text-align:center; }
+  #noAccess p{ color:var(--text-dim); font-size:14px; line-height:1.5; }
 </style>
 </head>
 <body>
@@ -121,10 +165,18 @@
 <div id="authScreen">
   <div class="box">
     <div class="title">Ventas Shell MDZ</div>
-    <div class="eyebrow">Iniciá sesión para ver el registro compartido</div>
-    <input type="email" id="authEmail" placeholder="Email" autocomplete="username" />
-    <input type="password" id="authPassword" placeholder="Contraseña" autocomplete="current-password" />
-    <button class="btn-amber tap" style="width:100%; padding:11px 0;" onclick="doSignIn()">Ingresar</button>
+    <div id="loginBox">
+      <div class="eyebrow">Ingresá con tu cuenta de Google</div>
+      <button class="google-btn tap" onclick="doGoogleSignIn()">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.2-.1-2.4-.4-3.5z"/></svg>
+        Ingresar con Google
+      </button>
+    </div>
+    <div id="noAccess" hidden>
+      <div class="eyebrow" style="margin-bottom:12px;">Sin acceso</div>
+      <p>La cuenta <b id="noAccessEmail"></b> todavía no tiene permiso para entrar.<br>Pedile al administrador que te agregue.</p>
+      <button class="btn-amber tap" style="width:100%;" onclick="signOutNow()">Usar otra cuenta</button>
+    </div>
     <div id="authError"></div>
     <div id="authLoading">Conectando…</div>
   </div>
@@ -132,19 +184,27 @@
 
 <div id="app" style="display:none;">
   <header>
-    <div class="eyebrow">Registro de ventas · compartido</div>
-    <div class="title">Ventas Shell MDZ</div>
+    <div class="hdr-row">
+      <div>
+        <div class="eyebrow">Registro de ventas · compartido</div>
+        <div class="title">Ventas Shell MDZ</div>
+      </div>
+      <button class="icon-btn tap" onclick="doSignOut()" title="Cerrar sesión" aria-label="Cerrar sesión">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+      </button>
+    </div>
+    <div class="hdr-meta">
+      <span class="pill"><b id="whoName"></b></span>
+      <span class="pill role" id="whoRole"></span>
+      <span class="pill" id="weatherPill">Clima…</span>
+    </div>
   </header>
 
   <div id="error"></div>
 
   <main>
     <!-- VENDER -->
-    <section id="tab-vender" class="tab active">
-      <div class="vendor-row">
-        <div class="vendor-btn tap active" data-vendor="Juan Cruz Solís" onclick="setVendedor('Juan Cruz Solís')">Juan Cruz Solís</div>
-        <div class="vendor-btn tap" data-vendor="Maira Medley" onclick="setVendedor('Maira Medley')">Maira Medley</div>
-      </div>
+    <section id="tab-vender" class="tab">
       <input type="date" id="sellDate" />
       <div class="hero" style="margin-top:10px;">
         <div class="eyebrow" id="sellDateLabel"></div>
@@ -179,6 +239,60 @@
         No hay ventas cargadas este día.
       </div>
       <div id="histList"></div>
+
+      <div class="eyebrow section-title">Reporte</div>
+      <div class="field-card">
+        <button class="tap" style="background:var(--green); border:none; color:#06231A; border-radius:10px; padding:10px 0; font-weight:700; font-size:13px;" onclick="exportExcel()">
+          Descargar Excel (ventas, horas y clima)
+        </button>
+      </div>
+    </section>
+
+    <!-- ESTADÍSTICAS -->
+    <section id="tab-stats" class="tab">
+      <div class="seg" id="statsRange">
+        <button data-range="hoy">Hoy</button>
+        <button data-range="7">7 días</button>
+        <button data-range="30">30 días</button>
+        <button data-range="all">Todo</button>
+      </div>
+      <select id="statsVendor" style="margin-bottom:12px;"></select>
+
+      <div class="hero">
+        <div class="eyebrow" id="statsRangeLabel">Ventas</div>
+        <div class="amount mono" id="statsCount">0</div>
+        <div class="sub mono" id="statsSub">$0</div>
+      </div>
+
+      <div id="statsEmpty" class="empty" style="padding:30px 12px; font-size:14px;" hidden>
+        No hay ventas en este período.
+      </div>
+
+      <div id="statsBody">
+        <div class="chip-row">
+          <div class="chip good"><div class="n">Hora que más vende</div><div class="v mono" id="bestHour">–</div></div>
+          <div class="chip bad"><div class="n">Hora que menos vende</div><div class="v mono" id="worstHour">–</div></div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center;" class="section-title">
+          <div class="eyebrow" style="margin:0;">Ventas por hora</div>
+          <div class="seg" id="statsMetric" style="margin:0; width:150px;">
+            <button data-metric="count">Cant.</button>
+            <button data-metric="amount">$</button>
+          </div>
+        </div>
+        <div class="chart-wrap"><div class="bars" id="hourBars"></div></div>
+
+        <div class="eyebrow section-title">Qué se vende en cada hora</div>
+        <div id="hourProducts"></div>
+
+        <div class="eyebrow section-title">Según el clima</div>
+        <div class="hint" id="weatherNote" style="margin-bottom:8px;"></div>
+        <div id="weatherStats"></div>
+
+        <div class="eyebrow section-title">Según la temperatura</div>
+        <div id="tempStats"></div>
+      </div>
     </section>
 
     <!-- PRODUCTOS -->
@@ -195,29 +309,39 @@
       </div>
       <div id="prodList" style="margin-bottom:24px;"></div>
 
-      <div class="eyebrow">Reporte</div>
-      <div class="field-card">
-        <button class="tap" style="background:var(--green); border:none; color:#06231A; border-radius:10px; padding:10px 0; font-weight:700; font-size:13px;" onclick="exportExcel()">
-          Descargar Excel (día, vendedor, productos y totales)
-        </button>
-      </div>
-
       <div class="eyebrow">Copia de seguridad</div>
       <div class="field-card">
         <button class="tap" style="background:var(--bg-elev2); border:1px solid var(--border); color:var(--text); border-radius:10px; padding:10px 0; font-weight:600; font-size:13px;" onclick="exportData()">
           Exportar datos (guardar archivo)
         </button>
-        <label class="tap" style="text-align:center; background:transparent; border:1px solid var(--border); color:var(--text-dim); border-radius:10px; padding:10px 0; font-weight:600; font-size:13px; display:block;">
+        <label class="tap admin-only" style="text-align:center; background:transparent; border:1px solid var(--border); color:var(--text-dim); border-radius:10px; padding:10px 0; font-weight:600; font-size:13px; display:block;">
           Importar datos (restaurar para todos)
           <input type="file" id="importFile" accept="application/json" style="display:none;" onchange="importData(event)" />
         </label>
-        <div style="font-size:12px; color:var(--text-dim); line-height:1.4;">
+        <div class="hint">
           Esto ya se guarda en la nube (Firebase) y se sincroniza solo entre todos. Exportar es solo un respaldo extra por las dudas.
         </div>
       </div>
 
-      <button class="tap" style="width:100%; background:transparent; border:1px solid var(--red); color:var(--red); border-radius:10px; padding:10px 0; font-size:13px; font-weight:600; margin-bottom:10px;" onclick="resetAll()">Borrar todos los datos</button>
-      <button class="tap" style="width:100%; background:transparent; border:1px solid var(--border); color:var(--text-dim); border-radius:10px; padding:10px 0; font-size:13px; font-weight:600;" onclick="doSignOut()">Cerrar sesión</button>
+      <button class="tap admin-only" style="width:100%; background:transparent; border:1px solid var(--red); color:var(--red); border-radius:10px; padding:10px 0; font-size:13px; font-weight:600;" onclick="resetAll()">Borrar todos los datos</button>
+    </section>
+
+    <!-- CUENTAS (solo admin) -->
+    <section id="tab-cuentas" class="tab">
+      <div class="eyebrow">Dar acceso a una cuenta</div>
+      <div class="field-card">
+        <input type="email" id="accEmail" placeholder="Gmail de la persona" autocomplete="off" />
+        <input type="text" id="accName" placeholder="Nombre (como aparece en las ventas)" maxlength="60" />
+        <select id="accRole">
+          <option value="vendedor">Vendedor · carga ventas</option>
+          <option value="jefe">Jefe · solo ve resultados</option>
+          <option value="admin">Admin · todo + cuentas</option>
+        </select>
+        <button class="btn-amber tap" style="padding:10px 0;" onclick="addAccount()">Dar acceso</button>
+        <div class="hint">La persona entra con "Ingresar con Google" usando ese mismo mail.</div>
+      </div>
+      <div class="eyebrow" id="accCount">Cuentas (0)</div>
+      <div id="accList"></div>
     </section>
   </main>
 
@@ -227,7 +351,7 @@
   </button>
 
   <nav>
-    <button class="tap active" data-tab="vender" onclick="setTab('vender')">
+    <button class="tap" data-tab="vender" onclick="setTab('vender')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
       <span>Vender</span>
     </button>
@@ -235,9 +359,17 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><path d="M12 7v5l4 2"/></svg>
       <span>Historial</span>
     </button>
+    <button class="tap" data-tab="stats" onclick="setTab('stats')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 16v-4"/><path d="M11 16V8"/><path d="M15 16v-6"/><path d="M19 16V5"/></svg>
+      <span>Estadísticas</span>
+    </button>
     <button class="tap" data-tab="productos" onclick="setTab('productos')">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
       <span>Productos</span>
+    </button>
+    <button class="tap" data-tab="cuentas" onclick="setTab('cuentas')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      <span>Cuentas</span>
     </button>
   </nav>
 </div>
@@ -246,10 +378,12 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
-    getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence
+    getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence,
+    GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
-    getFirestore, doc, setDoc, onSnapshot, enableIndexedDbPersistence
+    getFirestore, doc, collection, setDoc, deleteDoc, onSnapshot, enableIndexedDbPersistence,
+    arrayUnion, arrayRemove
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -268,15 +402,34 @@
   setPersistence(auth, browserLocalPersistence).catch(()=>{});
 
   const DOC_REF = doc(db, "shared", "data");
-  let unsubscribeSnapshot = null;
+  const USERS_COL = collection(db, "users");
+
+  // El dueño es admin siempre (también está fijado en las reglas de Firestore).
+  const OWNER_EMAIL = "juancruzsolis2008@gmail.com";
+  const OWNER_DEFAULT_NAME = "Juan Cruz Solís";
+
+  // Ubicación fija de la Shell: el clima se pide para este punto, sin usar el GPS del celular.
+  const SHELL_LOCATION = { lat: -32.8908, lon: -68.8272, tz: "America/Argentina/Mendoza", name: "Mendoza" };
+
+  const ROLE_LABEL = { admin: "Admin", vendedor: "Vendedor", jefe: "Jefe" };
+  const TABS_BY_ROLE = {
+    admin:    ["vender", "historial", "stats", "productos", "cuentas"],
+    vendedor: ["vender", "historial", "stats", "productos"],
+    jefe:     ["historial", "stats"]
+  };
 
   // ---------- Utilidades ----------
-  function todayStr(){
-    const d = new Date();
+  function fmtDate(d){
     const off = d.getTimezoneOffset();
     return new Date(d.getTime() - off*60000).toISOString().slice(0,10);
   }
+  function todayStr(){ return fmtDate(new Date()); }
+  function shiftDate(dateStr, days){
+    const [y,m,d] = dateStr.split("-").map(Number);
+    return fmtDate(new Date(y, m-1, d + days));
+  }
   function money(n){ return "$" + Math.round(n).toLocaleString("es-AR"); }
+  function pad2(n){ return String(n).padStart(2, "0"); }
   function dateLabel(dateStr, short){
     const [y,m,d] = dateStr.split("-").map(Number);
     const date = new Date(y, m-1, d);
@@ -287,14 +440,22 @@
   function escapeHtml(str){
     return String(str).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   }
+  function plural(n, one, many){ return n + " " + (n === 1 ? one : many); }
 
   // ---------- Estado ----------
   let promos = [];
   let salesData = {};
-  let vendedorActivo = localStorage.getItem("turno_vendedor") || "Juan Cruz Solís";
+  let users = [];          // [{ email, name, role }]
+  let me = null;           // { email, name, role }
   let sellDate = todayStr();
   let selectedDate = todayStr();
-  let lastAdded = null;
+  let lastAdded = null;    // { date, entry }
+  let currentTab = null;
+  let statsRange = "7";
+  let statsVendor = "all";
+  let statsMetric = "count";
+  let authUnsubs = [];
+  let dataUnsubs = [];
 
   function showError(msg){
     const el = document.getElementById("error");
@@ -302,9 +463,28 @@
     clearTimeout(showError._t);
     showError._t = setTimeout(()=>{ el.style.display="none"; }, 3500);
   }
+  function canSell(){ return me && (me.role === "admin" || me.role === "vendedor"); }
+  function isAdmin(){ return me && me.role === "admin"; }
+
+  // Días que tienen al menos una venta (al borrar quedan listas vacías).
+  function datesWithSales(){
+    return Object.keys(salesData).filter(d => (salesData[d]||[]).length > 0);
+  }
 
   // ---------- Firestore: guardar / escuchar ----------
-  async function persist(){
+  // Las ventas se agregan y quitan de a una (arrayUnion / arrayRemove) para que dos
+  // vendedores cargando a la vez no se pisen los datos.
+  async function saveFields(fields){
+    try {
+      await setDoc(DOC_REF, { ...fields, updatedAt: Date.now() }, { merge: true });
+    } catch(e){
+      showError("No se pudo guardar en la nube. Revisá tu conexión.");
+    }
+  }
+  function pushSale(date, entry){ return saveFields({ sales: { [date]: arrayUnion(entry) } }); }
+  function pullSale(date, entry){ return saveFields({ sales: { [date]: arrayRemove(entry) } }); }
+  function savePromos(){ return saveFields({ promos }); }
+  async function replaceAll(){
     try {
       await setDoc(DOC_REF, { promos, sales: salesData, updatedAt: Date.now() });
     } catch(e){
@@ -312,44 +492,140 @@
     }
   }
 
-  function subscribeData(){
-    if(unsubscribeSnapshot) unsubscribeSnapshot();
-    unsubscribeSnapshot = onSnapshot(DOC_REF, (snap) => {
+  function startData(){
+    stopData();
+    dataUnsubs.push(onSnapshot(DOC_REF, (snap) => {
       const data = snap.exists() ? snap.data() : { promos: [], sales: {} };
       promos = data.promos || [];
       salesData = data.sales || {};
       renderAll();
     }, (err) => {
       showError("No se pudo sincronizar: " + err.message);
-    });
+    }));
+    dataUnsubs.push(onSnapshot(USERS_COL, (snap) => {
+      users = snap.docs.map(d => ({ email: d.id, ...d.data() }))
+        .sort((a,b) => a.name.localeCompare(b.name, "es"));
+      renderHistorial();
+      renderStatsVendorOptions();
+      renderCuentas();
+    }, () => { /* sin permiso para listar: no pasa nada */ }));
+    fetchCurrentWeather();
+  }
+  function stopData(){
+    dataUnsubs.forEach(u => u()); dataUnsubs = [];
+    promos = []; salesData = {}; users = []; lastAdded = null;
   }
 
   function renderAll(){
     renderVender();
     renderHistorial();
+    renderStats();
     renderProductos();
     updateUndoBtn();
   }
 
-  // ---------- Vendedor ----------
-  window.setVendedor = function(name){
-    vendedorActivo = name;
-    localStorage.setItem("turno_vendedor", name);
-    document.querySelectorAll(".vendor-btn").forEach(b=>{
-      b.classList.toggle("active", b.dataset.vendor === name);
-    });
-  };
+  // ---------- Clima (Open-Meteo, gratis y sin clave) ----------
+  let currentWeather = null;   // { t, c, p, at }
+  let hourlyWeather = null;    // { "YYYY-MM-DDTHH": { t, c, p } }
+  let hourlyLoading = false;
+
+  function weatherUrl(params){
+    return `https://api.open-meteo.com/v1/forecast?latitude=${SHELL_LOCATION.lat}&longitude=${SHELL_LOCATION.lon}`
+      + `&timezone=${encodeURIComponent(SHELL_LOCATION.tz)}&${params}`;
+  }
+  async function fetchCurrentWeather(){
+    try {
+      const r = await fetch(weatherUrl("current=temperature_2m,weather_code,precipitation"));
+      const j = await r.json();
+      currentWeather = {
+        t: Math.round(j.current.temperature_2m * 10) / 10,
+        c: j.current.weather_code,
+        p: j.current.precipitation,
+        at: Date.now()
+      };
+    } catch(e){ /* sin conexión: la venta se guarda sin clima y se completa después */ }
+    renderWeatherPill();
+  }
+  setInterval(()=>{ if(me) fetchCurrentWeather(); }, 15*60*1000);
+  document.addEventListener("visibilitychange", ()=>{
+    if(document.visibilityState === "visible" && me && (!currentWeather || Date.now() - currentWeather.at > 15*60*1000)){
+      fetchCurrentWeather();
+    }
+  });
+
+  // Clima hora por hora de los últimos 92 días, para ventas que se cargaron sin clima.
+  async function loadHourlyWeather(){
+    if(hourlyWeather || hourlyLoading) return;
+    hourlyLoading = true;
+    try {
+      const r = await fetch(weatherUrl("hourly=temperature_2m,weather_code,precipitation&past_days=92&forecast_days=1"));
+      const j = await r.json();
+      const map = {};
+      j.hourly.time.forEach((t, i) => {
+        map[t.slice(0,13)] = { t: j.hourly.temperature_2m[i], c: j.hourly.weather_code[i], p: j.hourly.precipitation[i] };
+      });
+      hourlyWeather = map;
+      renderStats();
+    } catch(e){
+      hourlyLoading = false;
+    }
+  }
+
+  function weatherGroup(c){
+    if(c == null) return null;
+    if(c <= 1) return { k: "sol", label: "Despejado", icon: "☀️" };
+    if(c <= 3) return { k: "nub", label: "Nublado", icon: "⛅" };
+    if(c === 45 || c === 48) return { k: "nie", label: "Niebla", icon: "🌫️" };
+    if(c >= 95) return { k: "tor", label: "Tormenta", icon: "⛈️" };
+    if((c >= 71 && c <= 77) || c === 85 || c === 86) return { k: "nev", label: "Nieve", icon: "❄️" };
+    return { k: "llu", label: "Lluvia", icon: "🌧️" };
+  }
+  const TEMP_BANDS = [
+    { k: "frio", label: "Frío (menos de 12°)", max: 12 },
+    { k: "fresco", label: "Fresco (12° a 20°)", max: 20 },
+    { k: "templado", label: "Templado (20° a 28°)", max: 28 },
+    { k: "calor", label: "Calor (28° o más)", max: Infinity }
+  ];
+  function tempBand(t){
+    if(t == null) return null;
+    return TEMP_BANDS.find(b => t < b.max);
+  }
+
+  function renderWeatherPill(){
+    const el = document.getElementById("weatherPill");
+    if(!currentWeather){ el.textContent = "Clima no disponible"; return; }
+    const g = weatherGroup(currentWeather.c);
+    el.innerHTML = `${g.icon} <b class="mono">${Math.round(currentWeather.t)}°</b> ${g.label} · ${SHELL_LOCATION.name}`;
+  }
 
   // ---------- Navegación ----------
   window.setTab = function(tab){
+    if(me && !TABS_BY_ROLE[me.role].includes(tab)) tab = TABS_BY_ROLE[me.role][0];
+    currentTab = tab;
     document.querySelectorAll(".tab").forEach(el=>el.classList.remove("active"));
     document.getElementById("tab-"+tab).classList.add("active");
     document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active", b.dataset.tab===tab));
+    if(tab === "stats") loadHourlyWeather();
     updateUndoBtn();
   };
   window.goToProductos = function(){ window.setTab("productos"); };
 
+  function applyRole(){
+    document.getElementById("whoName").textContent = me.name;
+    document.getElementById("whoRole").textContent = ROLE_LABEL[me.role];
+    const allowed = TABS_BY_ROLE[me.role];
+    document.querySelectorAll("nav button").forEach(b => { b.hidden = !allowed.includes(b.dataset.tab); });
+    document.querySelectorAll(".admin-only").forEach(el => { el.hidden = !isAdmin(); });
+    window.setTab(currentTab && allowed.includes(currentTab) ? currentTab : allowed[0]);
+    renderVender();
+  }
+
   // ---------- Ventas ----------
+  function hourOf(e){
+    if(e.ts) return new Date(e.ts).getHours();
+    const h = parseInt(String(e.time || ""), 10);
+    return Number.isFinite(h) && h >= 0 && h < 24 ? h : null;
+  }
   function qtyOnDate(date, promoId){
     return (salesData[date]||[]).filter(e=>e.promoId===promoId).length;
   }
@@ -358,28 +634,34 @@
   }
 
   function addSale(promo){
+    if(!canSell()) return;
+    const now = new Date();
     const entry = { id: uid(), promoId: promo.id, name: promo.name, price: promo.price,
-      vendedor: vendedorActivo,
-      time: new Date().toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit"}) };
+      vendedor: me.name, by: me.email, ts: now.getTime(),
+      time: now.toLocaleTimeString("es-AR", {hour:"2-digit", minute:"2-digit", hour12:false}) };
+    // El clima de ahora solo sirve si la venta es de hoy; si no, se completa después con el histórico.
+    if(sellDate === todayStr() && currentWeather && Date.now() - currentWeather.at < 60*60*1000){
+      entry.weather = { t: currentWeather.t, c: currentWeather.c, p: currentWeather.p };
+    }
     if(!salesData[sellDate]) salesData[sellDate] = [];
     salesData[sellDate].push(entry);
-    persist();
-    lastAdded = { date: sellDate, id: entry.id, name: promo.name };
+    pushSale(sellDate, entry);
+    lastAdded = { date: sellDate, entry };
     renderVender(promo.id);
     renderHistorial();
     updateUndoBtn();
   }
 
   function removeSale(promo){
+    if(!canSell()) return;
     const list = salesData[sellDate] || [];
     let idx = -1;
     for(let i=list.length-1;i>=0;i--){ if(list[i].promoId===promo.id){ idx=i; break; } }
     if(idx===-1) return;
-    const removedId = list[idx].id;
+    const removed = list[idx];
     list.splice(idx,1);
-    if(list.length) salesData[sellDate] = list; else delete salesData[sellDate];
-    persist();
-    if(lastAdded && lastAdded.id === removedId) lastAdded = null;
+    pullSale(sellDate, removed);
+    if(lastAdded && lastAdded.entry.id === removed.id) lastAdded = null;
     renderVender();
     renderHistorial();
     updateUndoBtn();
@@ -387,10 +669,10 @@
 
   window.undoLast = function(){
     if(!lastAdded) return;
-    const { date, id } = lastAdded;
-    const list = (salesData[date]||[]).filter(e=>e.id!==id);
-    if(list.length) salesData[date] = list; else delete salesData[date];
-    persist();
+    const { date, entry } = lastAdded;
+    const stored = (salesData[date]||[]).find(e=>e.id===entry.id) || entry;
+    salesData[date] = (salesData[date]||[]).filter(e=>e.id!==entry.id);
+    pullSale(date, stored);
     lastAdded = null;
     renderVender();
     renderHistorial();
@@ -398,18 +680,18 @@
   };
   function updateUndoBtn(){
     const btn = document.getElementById("undoBtn");
-    const visible = document.getElementById("tab-vender").classList.contains("active") && lastAdded;
+    const visible = currentTab === "vender" && lastAdded;
     btn.style.display = visible ? "flex" : "none";
-    if(lastAdded) document.getElementById("undoLabel").textContent = "Deshacer " + lastAdded.name;
+    if(lastAdded) document.getElementById("undoLabel").textContent = "Deshacer " + lastAdded.entry.name;
   }
 
   // ---------- Render: Vender ----------
   function renderVender(flashId){
     document.getElementById("sellDate").value = sellDate;
-    document.getElementById("sellDateLabel").textContent = dateLabel(sellDate, true);
+    document.getElementById("sellDateLabel").textContent = dateLabel(sellDate, true) + (me ? " · vende " + me.name : "");
     document.getElementById("sellTotal").textContent = money(totalOnDate(sellDate));
     const c = (salesData[sellDate]||[]).length;
-    document.getElementById("sellCount").textContent = c + (c===1 ? " venta" : " ventas");
+    document.getElementById("sellCount").textContent = plural(c, "venta", "ventas");
 
     const grid = document.getElementById("ventaGrid");
     const empty = document.getElementById("ventaEmpty");
@@ -438,24 +720,29 @@
   }
 
   // ---------- Render: Historial ----------
+  // Vendedores a mostrar: los que tienen cuenta para vender y cualquiera que figure en ventas viejas.
+  function vendorNames(extraSales){
+    const names = users.filter(u => u.role === "vendedor" || u.role === "admin").map(u => u.name);
+    (extraSales || []).forEach(e => { if(e.vendedor && !names.includes(e.vendedor)) names.push(e.vendedor); });
+    return names;
+  }
+
   function renderHistorial(){
-    const allDates = Object.keys(salesData).sort((a,b)=>b.localeCompare(a));
+    const allDates = datesWithSales().sort((a,b)=>b.localeCompare(a));
     const grandTotal = allDates.reduce((s,d)=>s+totalOnDate(d),0);
     const grandCount = allDates.reduce((s,d)=>s+(salesData[d]||[]).length,0);
     document.getElementById("grandTotal").textContent = money(grandTotal);
-    document.getElementById("grandCount").textContent = grandCount + " ventas · " + allDates.length + (allDates.length===1?" día":" días");
+    document.getElementById("grandCount").textContent = grandCount + " ventas · " + plural(allDates.length, "día", "días");
 
     document.getElementById("histDate").value = selectedDate;
     document.getElementById("histDateLabel").textContent = dateLabel(selectedDate, true);
     const dayTotal = totalOnDate(selectedDate);
     const daySales = salesData[selectedDate] || [];
     document.getElementById("histTotal").textContent = money(dayTotal);
-    document.getElementById("histCount").textContent = daySales.length + (daySales.length===1?" venta":" ventas");
+    document.getElementById("histCount").textContent = plural(daySales.length, "venta", "ventas");
 
-    // Chips por vendedor
-    const vendedores = ["Juan Cruz Solís", "Maira Medley"];
     const vendorChips = document.getElementById("vendorChips");
-    vendorChips.innerHTML = vendedores.map(v=>{
+    vendorChips.innerHTML = vendorNames(daySales).map(v=>{
       const total = daySales.filter(e=>e.vendedor===v).reduce((s,e)=>s+e.price,0);
       return `<div class="chip"><div class="n">${escapeHtml(v)}</div><div class="v mono">${money(total)}</div></div>`;
     }).join("");
@@ -480,6 +767,173 @@
     `).join("");
   }
 
+  // ---------- Estadísticas ----------
+  function weatherOf(date, e, h){
+    if(e.weather) return e.weather;
+    if(hourlyWeather) return hourlyWeather[`${date}T${pad2(h)}`] || null;
+    return null;
+  }
+
+  function statsEntries(){
+    const today = todayStr();
+    let from = null;
+    if(statsRange === "hoy") from = today;
+    else if(statsRange !== "all") from = shiftDate(today, -(parseInt(statsRange, 10) - 1));
+    const out = [];
+    datesWithSales().forEach(date => {
+      if(from && date < from) return;
+      if(statsRange === "hoy" && date !== today) return;
+      salesData[date].forEach(e => {
+        if(statsVendor !== "all" && e.vendedor !== statsVendor) return;
+        const h = hourOf(e);
+        if(h == null) return;
+        out.push({ date, h, e, w: weatherOf(date, e, h) });
+      });
+    });
+    return out;
+  }
+
+  function topProducts(items, n){
+    const m = {};
+    items.forEach(x => { m[x.e.name] = (m[x.e.name] || 0) + 1; });
+    return Object.entries(m).sort((a,b) => b[1] - a[1]).slice(0, n);
+  }
+
+  function renderStatsVendorOptions(){
+    const sel = document.getElementById("statsVendor");
+    const all = [];
+    Object.values(salesData).forEach(l => (l||[]).forEach(e => all.push(e)));
+    const names = vendorNames(all);
+    if(statsVendor !== "all" && !names.includes(statsVendor)) statsVendor = "all";
+    sel.innerHTML = `<option value="all">Todos los vendedores</option>` +
+      names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join("");
+    sel.value = statsVendor;
+  }
+
+  // Agrupa ventas por una clave (clima o temperatura) y calcula ventas por hora con esa condición.
+  function groupStats(entries, keyFn){
+    const groups = {};
+    entries.forEach(x => {
+      const g = keyFn(x);
+      if(!g) return;
+      if(!groups[g.k]) groups[g.k] = { label: g.label, icon: g.icon || "", items: [], amount: 0, slots: new Set() };
+      groups[g.k].items.push(x);
+      groups[g.k].amount += x.e.price;
+      groups[g.k].slots.add(x.date + "T" + x.h);
+    });
+    return Object.values(groups).sort((a,b) => b.items.length - a.items.length);
+  }
+  function groupRowsHtml(groups){
+    const max = Math.max(...groups.map(g => g.items.length / g.slots.size));
+    return groups.map(g => {
+      const perHour = g.items.length / g.slots.size;
+      const top = topProducts(g.items, 2).map(([n,q]) => `${escapeHtml(n)} x${q}`).join(", ");
+      return `
+        <div class="stat-row">
+          <div class="top">
+            <span class="lbl">${g.icon} ${escapeHtml(g.label)}</span>
+            <span class="num mono">${perHour.toFixed(1)} ventas/hora</span>
+          </div>
+          <div class="det mono">${plural(g.items.length, "venta", "ventas")} · ${money(g.amount)} · ${plural(g.slots.size, "hora con ventas", "horas con ventas")}</div>
+          <div class="det">Lo más vendido: ${top}</div>
+          <div class="meter"><div style="width:${Math.round(perHour / max * 100)}%"></div></div>
+        </div>`;
+    }).join("");
+  }
+
+  function renderStats(){
+    document.querySelectorAll("#statsRange button").forEach(b => b.classList.toggle("active", b.dataset.range === statsRange));
+    document.querySelectorAll("#statsMetric button").forEach(b => b.classList.toggle("active", b.dataset.metric === statsMetric));
+    renderStatsVendorOptions();
+
+    const entries = statsEntries();
+    const rangeLabel = { hoy: "Ventas de hoy", "7": "Últimos 7 días", "30": "Últimos 30 días", all: "Toda la temporada" }[statsRange];
+    document.getElementById("statsRangeLabel").textContent = rangeLabel;
+    const amount = entries.reduce((s,x) => s + x.e.price, 0);
+    const days = new Set(entries.map(x => x.date)).size;
+    document.getElementById("statsCount").textContent = plural(entries.length, "venta", "ventas");
+    document.getElementById("statsSub").textContent = money(amount) + " · " + plural(days, "día", "días") +
+      (days > 1 ? " · prom. " + Math.round(entries.length / days) + " ventas/día" : "");
+
+    const emptyEl = document.getElementById("statsEmpty");
+    const bodyEl = document.getElementById("statsBody");
+    if(entries.length === 0){ emptyEl.hidden = false; bodyEl.hidden = true; return; }
+    emptyEl.hidden = true; bodyEl.hidden = false;
+
+    // Por hora
+    const cnt = new Array(24).fill(0), amt = new Array(24).fill(0);
+    entries.forEach(x => { cnt[x.h]++; amt[x.h] += x.e.price; });
+    const vals = statsMetric === "count" ? cnt : amt;
+    const active = cnt.map((c,h) => c > 0 ? h : -1).filter(h => h >= 0);
+    const minH = Math.min(...active), maxH = Math.max(...active);
+    let best = minH, worst = minH;
+    for(let h = minH; h <= maxH; h++){
+      if(vals[h] > vals[best]) best = h;
+      if(vals[h] < vals[worst]) worst = h;
+    }
+    const fmtVal = v => statsMetric === "count" ? String(v) : money(v);
+    const hourLabel = h => `${pad2(h)}–${pad2((h+1) % 24)} h`;
+    document.getElementById("bestHour").textContent = hourLabel(best) + " · " + fmtVal(vals[best]);
+    document.getElementById("worstHour").textContent = minH === maxH ? "–" : hourLabel(worst) + " · " + fmtVal(vals[worst]);
+
+    const maxVal = Math.max(...vals);
+    let bars = "";
+    for(let h = minH; h <= maxH; h++){
+      const cls = h === best ? "best" : (h === worst && minH !== maxH ? "worst" : "mid");
+      const pct = maxVal ? Math.max(2, vals[h] / maxVal * 100) : 2;
+      const short = statsMetric === "count" ? vals[h] : (vals[h] >= 1000 ? Math.round(vals[h]/1000) + "k" : vals[h]);
+      bars += `<div class="bar-col ${cls}"><div class="val mono">${short}</div><div class="bar" style="height:${pct}%"></div><div class="hr mono">${pad2(h)}</div></div>`;
+    }
+    document.getElementById("hourBars").innerHTML = bars;
+
+    // Qué se vende en cada hora
+    const byHour = {};
+    entries.forEach(x => { (byHour[x.h] = byHour[x.h] || []).push(x); });
+    const maxCnt = Math.max(...cnt);
+    document.getElementById("hourProducts").innerHTML = Object.keys(byHour).map(Number).sort((a,b)=>a-b).map(h => {
+      const items = byHour[h];
+      const top = topProducts(items, 3).map(([n,q]) => `${escapeHtml(n)} x${q}`).join(", ");
+      return `
+        <div class="stat-row">
+          <div class="top">
+            <span class="lbl mono">${hourLabel(h)}</span>
+            <span class="num mono">${plural(items.length, "venta", "ventas")} · ${money(amt[h])}</span>
+          </div>
+          <div class="det">${top}</div>
+          <div class="meter"><div style="width:${Math.round(items.length / maxCnt * 100)}%"></div></div>
+        </div>`;
+    }).join("");
+
+    // Clima
+    const withW = entries.filter(x => x.w);
+    const missing = entries.length - withW.length;
+    const noteEl = document.getElementById("weatherNote");
+    if(missing > 0 && !hourlyWeather){
+      noteEl.textContent = "Buscando el clima de ventas anteriores…";
+      loadHourlyWeather();
+    } else if(missing > 0){
+      noteEl.textContent = `${plural(missing, "venta", "ventas")} sin dato de clima (más de 3 meses o sin conexión).`;
+    } else {
+      noteEl.textContent = "Ventas por hora: cuántas ventas hubo en promedio en cada hora con ese clima.";
+    }
+    document.getElementById("weatherStats").innerHTML = withW.length
+      ? groupRowsHtml(groupStats(withW, x => weatherGroup(x.w.c)))
+      : `<div class="hint">Todavía no hay datos de clima.</div>`;
+    document.getElementById("tempStats").innerHTML = withW.length
+      ? groupRowsHtml(groupStats(withW, x => tempBand(x.w.t)))
+      : `<div class="hint">Todavía no hay datos de temperatura.</div>`;
+  }
+
+  document.querySelectorAll("#statsRange button").forEach(b => b.addEventListener("click", ()=>{
+    statsRange = b.dataset.range; renderStats();
+  }));
+  document.querySelectorAll("#statsMetric button").forEach(b => b.addEventListener("click", ()=>{
+    statsMetric = b.dataset.metric; renderStats();
+  }));
+  document.getElementById("statsVendor").addEventListener("change", (e)=>{
+    statsVendor = e.target.value; renderStats();
+  });
+
   // ---------- Render: Productos ----------
   function renderProductos(){
     document.getElementById("prodCount").textContent = "Tus productos (" + promos.length + ")";
@@ -488,7 +942,7 @@
     if(promos.length === 0){ listEl.innerHTML=""; emptyEl.style.display="block"; return; }
     emptyEl.style.display = "none";
     listEl.innerHTML = promos.map(p => `
-      <div class="row-card" data-id="${p.id}">
+      <div class="row-card" data-id="${escapeHtml(p.id)}">
         <div>
           <div style="font-size:14px; font-weight:600;">${escapeHtml(p.name)}</div>
           <div class="mono" style="font-size:13px; color:var(--amber);">${money(p.price)}</div>
@@ -505,40 +959,39 @@
     `).join("");
     listEl.querySelectorAll(".row-card").forEach(row=>{
       const id = row.dataset.id;
-      row.querySelector('[data-action="edit"]').addEventListener("click", ()=>startEdit(id));
+      row.querySelector('[data-action="edit"]').addEventListener("click", ()=>startEdit(id, row));
       row.querySelector('[data-action="delete"]').addEventListener("click", ()=>deletePromo(id));
     });
   }
 
-  function startEdit(id){
+  function startEdit(id, row){
     const p = promos.find(x=>x.id===id);
     if(!p) return;
-    const row = document.querySelector(`#prodList .row-card[data-id="${id}"]`);
     row.innerHTML = `
       <div style="display:flex; flex-direction:column; gap:6px; width:100%;">
-        <input type="text" id="editName-${id}" value="${escapeHtml(p.name)}" />
-        <input type="number" id="editPrice-${id}" value="${p.price}" inputmode="decimal" />
+        <input type="text" data-field="name" value="${escapeHtml(p.name)}" />
+        <input type="number" data-field="price" value="${p.price}" inputmode="decimal" />
         <div style="display:flex; gap:8px;">
           <button class="tap" style="flex:1; background:var(--green); border:none; border-radius:8px; padding:8px 0; color:#06231A; font-weight:700;" data-action="save">Guardar</button>
           <button class="tap" style="flex:1; background:transparent; border:1px solid var(--border); border-radius:8px; padding:8px 0; color:var(--text-dim);" data-action="cancel">Cancelar</button>
         </div>
       </div>
     `;
-    row.querySelector('[data-action="save"]').addEventListener("click", ()=>saveEdit(id));
+    row.querySelector('[data-action="save"]').addEventListener("click", ()=>saveEdit(id, row));
     row.querySelector('[data-action="cancel"]').addEventListener("click", renderProductos);
   }
-  function saveEdit(id){
-    const name = document.getElementById("editName-"+id).value.trim();
-    const price = parseFloat(document.getElementById("editPrice-"+id).value);
+  function saveEdit(id, row){
+    const name = row.querySelector('[data-field="name"]').value.trim();
+    const price = parseFloat(row.querySelector('[data-field="price"]').value);
     if(!name || !price || price<=0){ showError("Datos inválidos."); return; }
     promos = promos.map(p => p.id===id ? {...p, name, price} : p);
-    persist();
+    savePromos();
     renderAll();
   }
   function deletePromo(id){
     if(!confirm("¿Eliminar este producto? El historial de ventas no se toca.")) return;
     promos = promos.filter(p=>p.id!==id);
-    persist();
+    savePromos();
     renderAll();
   }
   window.addPromo = function(){
@@ -548,17 +1001,76 @@
     const price = parseFloat(priceEl.value);
     if(!name || !price || price<=0){ showError("Poné un nombre y un precio válido."); return; }
     promos.push({ id: uid(), name, price });
-    persist();
+    savePromos();
     nameEl.value=""; priceEl.value="";
     renderAll();
   };
   window.resetAll = function(){
+    if(!isAdmin()) return;
     if(!confirm("Esto borra todos los productos y todas las ventas PARA TODOS. ¿Seguro?")) return;
     if(!confirm("Confirmá de nuevo: se borra TODO y no se puede deshacer.")) return;
     promos = []; salesData = {};
-    persist();
+    replaceAll();
     renderAll();
   };
+
+  // ---------- Cuentas (solo admin) ----------
+  function renderCuentas(){
+    if(!isAdmin()) return;
+    document.getElementById("accCount").textContent = "Cuentas (" + users.length + ")";
+    const listEl = document.getElementById("accList");
+    listEl.innerHTML = users.map(u => {
+      const isOwnerRow = u.email === OWNER_EMAIL;
+      return `
+        <div class="acc-row" data-email="${escapeHtml(u.email)}">
+          <input type="text" data-field="name" value="${escapeHtml(u.name)}" maxlength="60" />
+          <div class="email">${escapeHtml(u.email)}${isOwnerRow ? " · dueño" : ""}</div>
+          <div class="ctrls">
+            <select data-field="role" ${isOwnerRow ? "disabled" : ""}>
+              ${Object.entries(ROLE_LABEL).map(([k,l]) => `<option value="${k}" ${u.role===k?"selected":""}>${l}</option>`).join("")}
+            </select>
+            ${isOwnerRow ? "" : `<button class="tap" data-action="delete" style="background:transparent;border:1px solid var(--red);color:var(--red);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600;">Quitar</button>`}
+          </div>
+        </div>`;
+    }).join("");
+    listEl.querySelectorAll(".acc-row").forEach(row => {
+      const email = row.dataset.email;
+      const u = users.find(x => x.email === email);
+      row.querySelector('[data-field="name"]').addEventListener("change", (e) => {
+        const name = e.target.value.trim();
+        if(!name){ e.target.value = u.name; return; }
+        saveAccount(email, { name, role: u.role });
+      });
+      const roleSel = row.querySelector('[data-field="role"]');
+      roleSel.addEventListener("change", () => saveAccount(email, { name: u.name, role: roleSel.value }));
+      const del = row.querySelector('[data-action="delete"]');
+      if(del) del.addEventListener("click", () => removeAccount(email, u.name));
+    });
+  }
+  async function saveAccount(email, data){
+    try {
+      await setDoc(doc(db, "users", email), { ...data, updatedAt: Date.now() }, { merge: true });
+    } catch(e){ showError("No se pudo guardar la cuenta."); }
+  }
+  window.addAccount = async function(){
+    const emailEl = document.getElementById("accEmail");
+    const nameEl = document.getElementById("accName");
+    const email = emailEl.value.trim().toLowerCase();
+    const name = nameEl.value.trim();
+    const role = document.getElementById("accRole").value;
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ showError("Poné un mail válido."); return; }
+    if(!name){ showError("Poné el nombre de la persona."); return; }
+    if(users.some(u => u.email === email)){ showError("Esa cuenta ya tiene acceso."); return; }
+    try {
+      await setDoc(doc(db, "users", email), { name, role, createdAt: Date.now(), createdBy: me.email });
+      emailEl.value = ""; nameEl.value = "";
+    } catch(e){ showError("No se pudo crear la cuenta."); }
+  };
+  async function removeAccount(email, name){
+    if(!confirm(`¿Quitarle el acceso a ${name}? Sus ventas cargadas no se borran.`)) return;
+    try { await deleteDoc(doc(db, "users", email)); }
+    catch(e){ showError("No se pudo quitar la cuenta."); }
+  }
 
   // ---------- Reporte Excel ----------
   window.exportExcel = function(){
@@ -566,12 +1078,11 @@
       showError("No se pudo cargar el generador de Excel. Revisá tu conexión.");
       return;
     }
-    const allDates = Object.keys(salesData).sort((a,b)=>a.localeCompare(b));
+    const allDates = datesWithSales().sort((a,b)=>a.localeCompare(b));
     if(allDates.length === 0){
       showError("Todavía no hay ventas cargadas para exportar.");
       return;
     }
-    const vendedoresOrder = ["Juan Cruz Solís", "Maira Medley"];
 
     // Nombres de producto: primero los productos actuales, después cualquier producto
     // ya borrado que haya quedado en ventas viejas (para no perder esas columnas).
@@ -598,7 +1109,7 @@
 
       const byVendor = {};
       daySales.forEach(e=>{
-        const v = vendedoresOrder.includes(e.vendedor) ? e.vendedor : "Sin asignar";
+        const v = e.vendedor || "Sin asignar";
         if(!byVendor[v]) byVendor[v] = [];
         byVendor[v].push(e);
         qtyTotals[e.name] = (qtyTotals[e.name]||0) + 1;
@@ -629,8 +1140,38 @@
       ...productNames.map(()=>({wch:16})),
       {wch:20}, {wch:22}
     ];
+
+    // Hoja por hora (toda la temporada)
+    const hourRows = [["Hora", "Ventas", "Total $", "Producto más vendido"]];
+    const byHour = {};
+    allDates.forEach(date => (salesData[date]||[]).forEach(e => {
+      const h = hourOf(e); if(h == null) return;
+      (byHour[h] = byHour[h] || []).push({ date, h, e });
+    }));
+    Object.keys(byHour).map(Number).sort((a,b)=>a-b).forEach(h => {
+      const items = byHour[h];
+      const top = topProducts(items, 1)[0];
+      hourRows.push([`${pad2(h)}:00 a ${pad2((h+1)%24)}:00`, items.length,
+        items.reduce((s,x)=>s+x.e.price,0), top ? `${top[0]} (${top[1]})` : ""]);
+    });
+    const wsHour = XLSX.utils.aoa_to_sheet(hourRows);
+    wsHour["!cols"] = [{wch:16}, {wch:10}, {wch:12}, {wch:30}];
+
+    // Hoja con cada venta, su hora y el clima
+    const detailRows = [["Fecha", "Hora", "Vendedor", "Producto", "Precio", "Temperatura °C", "Clima"]];
+    allDates.forEach(date => (salesData[date]||[]).forEach(e => {
+      const h = hourOf(e);
+      const w = h == null ? null : weatherOf(date, e, h);
+      const g = w ? weatherGroup(w.c) : null;
+      detailRows.push([date, e.time || "", e.vendedor || "", e.name, e.price, w ? w.t : "", g ? g.label : ""]);
+    }));
+    const wsDetail = XLSX.utils.aoa_to_sheet(detailRows);
+    wsDetail["!cols"] = [{wch:12}, {wch:8}, {wch:18}, {wch:24}, {wch:10}, {wch:15}, {wch:12}];
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Ventas");
+    XLSX.utils.book_append_sheet(wb, wsHour, "Por hora");
+    XLSX.utils.book_append_sheet(wb, wsDetail, "Detalle y clima");
     XLSX.writeFile(wb, `ventas_shell_mdz_${todayStr()}.xlsx`);
   };
 
@@ -650,7 +1191,7 @@
 
   window.importData = function(event){
     const file = event.target.files[0];
-    if(!file) return;
+    if(!file || !isAdmin()) return;
     const reader = new FileReader();
     reader.onload = () => {
       try {
@@ -659,7 +1200,7 @@
         if(!confirm("Esto reemplaza los datos de TODOS por los del archivo. ¿Continuar?")) return;
         promos = data.promos;
         salesData = data.salesData;
-        persist();
+        replaceAll();
         renderAll();
         showError("Datos restaurados correctamente.");
       } catch(e){
@@ -680,43 +1221,84 @@
     renderHistorial();
   });
 
-  // ---------- Autenticación ----------
-  window.doSignIn = function(){
-    const email = document.getElementById("authEmail").value.trim();
-    const password = document.getElementById("authPassword").value;
-    const errEl = document.getElementById("authError");
-    const loadingEl = document.getElementById("authLoading");
-    errEl.style.display = "none";
-    if(!email || !password){ errEl.textContent = "Completá email y contraseña."; errEl.style.display="block"; return; }
-    loadingEl.style.display = "block";
-    signInWithEmailAndPassword(auth, email, password)
-      .catch((err) => {
-        loadingEl.style.display = "none";
-        errEl.textContent = "No se pudo ingresar. Revisá el email y la contraseña.";
-        errEl.style.display = "block";
-      });
-  };
+  // ---------- Autenticación (Google) ----------
+  const provider = new GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: "select_account" });
 
+  function setAuthMsg(error, loading){
+    const errEl = document.getElementById("authError");
+    errEl.textContent = error || ""; errEl.style.display = error ? "block" : "none";
+    document.getElementById("authLoading").style.display = loading ? "block" : "none";
+  }
+
+  window.doGoogleSignIn = async function(){
+    setAuthMsg("", true);
+    try {
+      await signInWithPopup(auth, provider);
+    } catch(err){
+      // En algunos celulares (app instalada en pantalla de inicio) el popup no abre: se usa redirección.
+      if(err.code === "auth/popup-blocked" || err.code === "auth/operation-not-supported-in-this-environment"){
+        try { await signInWithRedirect(auth, provider); return; } catch(e){ err = e; }
+      }
+      const cancelled = err.code === "auth/popup-closed-by-user" || err.code === "auth/cancelled-popup-request";
+      setAuthMsg(cancelled ? "" : "No se pudo ingresar con Google. Probá de nuevo.", false);
+    }
+  };
+  getRedirectResult(auth).catch(()=> setAuthMsg("No se pudo ingresar con Google. Probá de nuevo.", false));
+
+  window.signOutNow = function(){ signOut(auth); };
   window.doSignOut = function(){
     if(!confirm("¿Cerrar sesión en este dispositivo?")) return;
     signOut(auth);
   };
 
-  onAuthStateChanged(auth, (user) => {
+  function showScreen(which, email){
     const authScreen = document.getElementById("authScreen");
     const appEl = document.getElementById("app");
-    const loadingEl = document.getElementById("authLoading");
-    if(user){
-      loadingEl.style.display = "none";
-      authScreen.style.display = "none";
-      appEl.style.display = "flex";
-      window.setVendedor(vendedorActivo);
-      subscribeData();
-    } else {
-      if(unsubscribeSnapshot){ unsubscribeSnapshot(); unsubscribeSnapshot = null; }
-      appEl.style.display = "none";
-      authScreen.style.display = "flex";
-    }
+    appEl.style.display = which === "app" ? "flex" : "none";
+    authScreen.style.display = which === "app" ? "none" : "flex";
+    document.getElementById("loginBox").hidden = which !== "login";
+    document.getElementById("noAccess").hidden = which !== "noaccess";
+    if(which === "noaccess") document.getElementById("noAccessEmail").textContent = email;
+    setAuthMsg("", which === "loading");
+  }
+
+  onAuthStateChanged(auth, (user) => {
+    authUnsubs.forEach(u => u()); authUnsubs = [];
+    stopData();
+    me = null;
+    if(!user){ showScreen("login"); return; }
+    // Sesiones viejas de mail y contraseña: se cierran para que entren con Google.
+    if(!user.providerData.some(p => p.providerId === "google.com")){ signOut(auth); return; }
+
+    const email = user.email.toLowerCase();
+    showScreen("loading");
+    const profileRef = doc(db, "users", email);
+    authUnsubs.push(onSnapshot(profileRef, async (snap) => {
+      if(!snap.exists()){
+        if(email === OWNER_EMAIL){
+          // Primera vez del dueño: se crea su cuenta de admin.
+          try {
+            await setDoc(profileRef, { name: OWNER_DEFAULT_NAME, role: "admin", createdAt: Date.now(), createdBy: email });
+          } catch(e){ setAuthMsg("No se pudo crear tu cuenta de admin.", false); }
+          return;
+        }
+        stopData(); me = null;
+        showScreen("noaccess", email);
+        return;
+      }
+      const d = snap.data();
+      const firstLoad = !me;
+      me = { email, name: d.name, role: email === OWNER_EMAIL ? "admin" : d.role };
+      if(!TABS_BY_ROLE[me.role]) me.role = "jefe";
+      showScreen("app");
+      if(firstLoad) startData();
+      applyRole();
+      renderCuentas();
+    }, (err) => {
+      showScreen("login");
+      setAuthMsg("No se pudo verificar tu cuenta: " + err.message, false);
+    }));
   });
 </script>
 </body>

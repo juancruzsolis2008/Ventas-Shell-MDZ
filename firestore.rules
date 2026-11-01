@@ -1,0 +1,43 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Solo se entra con Google y con el mail verificado.
+    function signedIn() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.firebase.sign_in_provider == 'google.com';
+    }
+    function myEmail() { return request.auth.token.email.lower(); }
+    // El dueño siempre es admin, aunque se borre su documento.
+    function isOwner() { return signedIn() && myEmail() == 'juancruzsolis2008@gmail.com'; }
+    function myProfilePath() { return /databases/$(database)/documents/users/$(myEmail()); }
+    function hasProfile() { return signedIn() && exists(myProfilePath()); }
+    function myRole() { return get(myProfilePath()).data.role; }
+
+    function isMember() { return isOwner() || hasProfile(); }
+    function isAdmin()  { return isOwner() || (hasProfile() && myRole() == 'admin'); }
+    function canSell()  { return isOwner() || (hasProfile() && myRole() in ['admin', 'vendedor']); }
+
+    function validProfile(userEmail) {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['name', 'role', 'createdAt', 'createdBy', 'updatedAt'])
+        && d.name is string && d.name.size() > 0 && d.name.size() <= 60
+        && d.role in ['admin', 'vendedor', 'jefe']
+        && userEmail == userEmail.lower();
+    }
+
+    // Cuentas: cada documento se llama como el mail de la persona.
+    match /users/{userEmail} {
+      allow read: if isMember() || (signedIn() && userEmail == myEmail());
+      allow create, update: if isAdmin() && validProfile(userEmail);
+      allow delete: if isAdmin() && userEmail != 'juancruzsolis2008@gmail.com';
+    }
+
+    // Productos y ventas: todos los miembros ven, solo admin y vendedores cargan.
+    match /shared/data {
+      allow read: if isMember();
+      allow write: if canSell();
+    }
+  }
+}
